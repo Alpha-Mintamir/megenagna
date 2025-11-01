@@ -52,13 +52,13 @@ export async function PATCH(
       // Update existing entry
       await db.collection('meetings').updateOne(
         { id: params.id, 'availability.userId': userId },
-        { $set: { 'availability.$.slots': slots } }
+        { $set: { 'availability.$.slots': slots } } as any
       );
     } else {
       // Add new entry
       await db.collection('meetings').updateOne(
         { id: params.id },
-        { $push: { availability: { userId, userName, slots } } }
+        { $push: { availability: { userId, userName, slots } } } as any
       );
     }
     

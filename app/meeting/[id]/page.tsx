@@ -100,8 +100,8 @@ export default function MeetingPage({ params }: PageProps) {
   const slotCounts = useMemo(() => {
     const counts: { [key: string]: number } = {};
     
-    meeting.availability.forEach((entry) => {
-      entry.slots.forEach((slot) => {
+    meeting.availability.forEach((entry: any) => {
+      entry.slots.forEach((slot: string) => {
         counts[slot] = (counts[slot] || 0) + 1;
       });
     });
@@ -399,7 +399,7 @@ export default function MeetingPage({ params }: PageProps) {
               </span>
             </h2>
             <div className="grid md:grid-cols-3 gap-4">
-              {meeting.availability.map((entry, idx) => (
+              {meeting.availability.map((entry: any, idx: number) => (
                 <div key={idx} className="flex items-center gap-4 p-5 bg-gradient-to-br from-gray-50 to-white rounded-xl border-2 border-gray-200 card-hover shadow-md">
                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-ethiopian-green to-green-600 text-white flex items-center justify-center font-bold text-xl shadow-lg">
                     {entry.userName.charAt(0).toUpperCase()}
