@@ -1,16 +1,20 @@
 import { MongoClient } from 'mongodb';
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please add your MongoDB URI to .env.local');
+const uri = process.env.MONGODB_URI;
+
+if (!uri) {
+  console.warn('Warning: MONGODB_URI is not set. Database features will not work.');
 }
 
-const uri = process.env.MONGODB_URI;
 const options = {};
 
 let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
 
-if (process.env.NODE_ENV === 'development') {
+if (!uri) {
+  // If no URI, create a dummy promise that will reject
+  clientPromise = Promise.reject(new Error('MongoDB URI is not configured'));
+} else if (process.env.NODE_ENV === 'development') {
   // In development mode, use a global variable so that the value
   // is preserved across module reloads caused by HMR (Hot Module Replacement).
   let globalWithMongo = global as typeof globalThis & {
