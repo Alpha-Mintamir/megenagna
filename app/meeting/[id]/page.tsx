@@ -18,6 +18,7 @@ export default function MeetingPage({ params }: PageProps) {
   const router = useRouter();
   const [meeting, setMeeting] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   
   const [userName, setUserName] = useState("");
   const [selectedSlots, setSelectedSlots] = useState<Set<string>>(new Set());
@@ -25,6 +26,11 @@ export default function MeetingPage({ params }: PageProps) {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [userId] = useState(() => Math.random().toString(36).substring(2, 11));
   const [copied, setCopied] = useState(false);
+
+  // Fix hydration issues
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch meeting from database
   useEffect(() => {
@@ -61,7 +67,7 @@ export default function MeetingPage({ params }: PageProps) {
     fetchMeeting();
   }, [params.id, router]);
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center ethiopian-pattern">
         <div className="text-center">
