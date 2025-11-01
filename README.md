@@ -1,4 +1,4 @@
 # 📅 መገናኛ · Megenagna
-When2meet but in ethiopic theme
+When2meet but with ethiopic theme
 
 
