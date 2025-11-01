@@ -7,19 +7,28 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    console.log('GET /api/meetings/[id] - ID:', params.id);
+    console.log('MONGODB_URI exists:', !!process.env.MONGODB_URI);
+    console.log('MONGODB_DB:', process.env.MONGODB_DB);
+    
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB || 'calendarr');
     
     const meeting = await db.collection('meetings').findOne({ id: params.id });
+    console.log('Meeting found:', !!meeting);
     
     if (!meeting) {
       return NextResponse.json({ error: 'Meeting not found' }, { status: 404 });
     }
     
     return NextResponse.json({ meeting });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Database error:', error);
-    return NextResponse.json({ error: 'Failed to fetch meeting' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Failed to fetch meeting', 
+      details: error.message,
+      mongoConfigured: !!process.env.MONGODB_URI 
+    }, { status: 500 });
   }
 }
 

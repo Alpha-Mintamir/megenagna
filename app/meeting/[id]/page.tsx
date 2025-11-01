@@ -30,15 +30,29 @@ export default function MeetingPage({ params }: PageProps) {
   useEffect(() => {
     async function fetchMeeting() {
       try {
+        console.log('Fetching meeting:', params.id);
         const response = await fetch(`/api/meetings/${params.id}`);
+        console.log('Response status:', response.status);
+        
         if (!response.ok) {
-          throw new Error('Meeting not found');
+          const errorData = await response.json().catch(() => ({}));
+          console.error('API error:', errorData);
+          throw new Error(errorData.error || 'Meeting not found');
         }
+        
         const data = await response.json();
+        console.log('Meeting data:', data);
+        
+        if (!data.meeting) {
+          throw new Error('No meeting data received');
+        }
+        
         setMeeting(data.meeting);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching meeting:', error);
-        router.push('/');
+        alert(`Failed to load meeting: ${error.message}. Check if MongoDB environment variables are set in Vercel.`);
+        // Don't redirect immediately, let user see the error
+        setLoading(false);
       } finally {
         setLoading(false);
       }
