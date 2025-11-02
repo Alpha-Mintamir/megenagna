@@ -33,8 +33,10 @@ export default function MeetingPage({ params }: PageProps) {
     setUserId(Math.random().toString(36).substring(2, 11));
   }, []);
 
-  // Fetch meeting from database
+  // Fetch meeting from database - only on client side
   useEffect(() => {
+    if (!mounted) return;
+    
     async function fetchMeeting() {
       try {
         console.log('Fetching meeting:', params.id);
@@ -66,7 +68,7 @@ export default function MeetingPage({ params }: PageProps) {
     }
     
     fetchMeeting();
-  }, [params.id, router]);
+  }, [params.id, router, mounted]);
 
   if (!mounted || loading) {
     return (
