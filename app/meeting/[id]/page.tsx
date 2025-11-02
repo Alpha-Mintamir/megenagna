@@ -1,13 +1,13 @@
 "use client";
 
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 
 // Completely disable SSR and static generation for this route
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 // Import with no SSR
-const MeetingPageClient = dynamic(
+const MeetingPageClient = dynamicImport(
   () => import('./MeetingPageClient'),
   { 
     ssr: false,
