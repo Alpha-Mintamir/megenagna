@@ -18,6 +18,7 @@ export default function MeetingPageClient({ meetingId }: Props) {
   const router = useRouter();
   const [meeting, setMeeting] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   
   const [userName, setUserName] = useState("");
   const [selectedSlots, setSelectedSlots] = useState<Set<string>>(new Set());
@@ -26,8 +27,15 @@ export default function MeetingPageClient({ meetingId }: Props) {
   const [userId] = useState(() => Math.random().toString(36).substring(2, 11));
   const [copied, setCopied] = useState(false);
 
-  // Fetch meeting from database
+  // Ensure component is mounted on client before rendering
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Fetch meeting from database - only after mount
+  useEffect(() => {
+    if (!mounted) return;
+    
     async function fetchMeeting() {
       try {
         console.log('Fetching meeting:', meetingId);
@@ -58,9 +66,10 @@ export default function MeetingPageClient({ meetingId }: Props) {
     }
     
     fetchMeeting();
-  }, [meetingId]);
+  }, [meetingId, mounted]);
 
-  if (loading) {
+  // Don't render anything until mounted (prevents hydration issues)
+  if (!mounted || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center ethiopian-pattern">
         <div className="text-center">
@@ -87,17 +96,19 @@ export default function MeetingPageClient({ meetingId }: Props) {
     );
   }
 
-  // Generate time slots
+  // Generate time slots - only compute when meeting is loaded and mounted
   const timeSlots = useMemo(() => {
+    if (!meeting || !mounted) return [];
     const slots = [];
     for (let hour = meeting.timeRange.start.hour; hour < meeting.timeRange.end.hour; hour++) {
       slots.push(`${hour.toString().padStart(2, '0')}:00`);
     }
     return slots;
-  }, [meeting.timeRange]);
+  }, [meeting?.timeRange, mounted]);
 
-  // Generate date range
+  // Generate date range - only compute when meeting is loaded and mounted
   const dates = useMemo(() => {
+    if (!meeting || !mounted) return [];
     const start = new Date(meeting.dateRange.start);
     const end = new Date(meeting.dateRange.end);
     const dateArray = [];
@@ -107,10 +118,11 @@ export default function MeetingPageClient({ meetingId }: Props) {
     }
     
     return dateArray;
-  }, [meeting.dateRange]);
+  }, [meeting?.dateRange, mounted]);
 
-  // Calculate availability count for each slot
+  // Calculate availability count for each slot - only when meeting is loaded and mounted
   const slotCounts = useMemo(() => {
+    if (!meeting || !mounted) return {};
     const counts: { [key: string]: number } = {};
     
     meeting.availability.forEach((entry: any) => {
@@ -120,9 +132,12 @@ export default function MeetingPageClient({ meetingId }: Props) {
     });
     
     return counts;
-  }, [meeting.availability]);
+  }, [meeting?.availability, mounted]);
 
-  const maxCount = Math.max(...Object.values(slotCounts), 0);
+  const maxCount = useMemo(() => {
+    const values = Object.values(slotCounts);
+    return values.length > 0 ? Math.max(...values, 0) : 0;
+  }, [slotCounts]);
 
   const handleSlotClick = (date: Date, time: string) => {
     if (hasSubmitted) return;
@@ -318,6 +333,7 @@ export default function MeetingPageClient({ meetingId }: Props) {
         )}
 
         {/* Calendar Grid */}
+        {dates.length > 0 && timeSlots.length > 0 && (
         <div className="bg-white rounded-2xl shadow-2xl p-8 overflow-x-auto ethiopian-border">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -405,6 +421,7 @@ export default function MeetingPageClient({ meetingId }: Props) {
             </div>
           </div>
         </div>
+        )}
 
         {/* Participants List */}
         {meeting.availability.length > 0 && (
