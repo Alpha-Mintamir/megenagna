@@ -29,7 +29,10 @@ export default function MeetingPageClient({ meetingId }: Props) {
 
   // Ensure component is mounted on client before rendering
   useEffect(() => {
-    setMounted(true);
+    // Double-check we're on client (window exists)
+    if (typeof window !== 'undefined') {
+      setMounted(true);
+    }
   }, []);
 
   // Fetch meeting from database - only after mount
@@ -232,7 +235,7 @@ export default function MeetingPageClient({ meetingId }: Props) {
   };
 
   return (
-    <div className="min-h-screen ethiopian-pattern" onMouseUp={handleMouseUp}>
+    <div className="min-h-screen ethiopian-pattern" onMouseUp={handleMouseUp} suppressHydrationWarning>
       {/* Header */}
       <header className="ethiopian-border bg-white shadow-xl">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -259,7 +262,7 @@ export default function MeetingPageClient({ meetingId }: Props) {
                 <span className="flex items-center gap-2 bg-ethiopian-green/10 px-4 py-2 rounded-full">
                   <Calendar size={18} className="text-ethiopian-green" />
                   <span className="font-semibold">
-                    {new Date(meeting.dateRange.start).toLocaleDateString()} - {new Date(meeting.dateRange.end).toLocaleDateString()}
+                    {new Date(meeting.dateRange.start).toISOString().split('T')[0]} - {new Date(meeting.dateRange.end).toISOString().split('T')[0]}
                   </span>
                 </span>
                 <span className="flex items-center gap-2 bg-ethiopian-yellow/20 px-4 py-2 rounded-full">
@@ -371,7 +374,7 @@ export default function MeetingPageClient({ meetingId }: Props) {
                       {ETHIOPIAN_DAYS[dayOfWeek]}
                     </div>
                     <div className="text-base font-bold text-gray-800">
-                      {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      {date.getMonth() + 1}/{date.getDate()}
                     </div>
                     <div className="font-ethiopic text-xs text-gray-600 mt-1">
                       {formatEthiopianDate(ethDate, false)}
