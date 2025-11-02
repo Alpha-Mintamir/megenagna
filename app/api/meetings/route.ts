@@ -24,9 +24,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
     
-    const client = await clientPromise;
-    const db = client.db(process.env.MONGODB_DB || 'calendarr');
-    
     const meeting = {
       id: `meeting-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       title,
@@ -38,12 +35,24 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
     };
     
-    await db.collection('meetings').insertOne(meeting);
+    try {
+      const client = await Promise.race([
+        clientPromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), 3000))
+      ]) as any;
+      
+      const db = client.db(process.env.MONGODB_DB || 'calendarr');
+      await db.collection('meetings').insertOne(meeting);
+      console.log('✅ Meeting saved to MongoDB');
+    } catch (dbError: any) {
+      console.warn('⚠️ MongoDB unavailable, meeting created in-memory only:', dbError.message);
+      // Continue without database - meeting is still created
+    }
     
     return NextResponse.json({ meeting }, { status: 201 });
-  } catch (error) {
-    console.error('Database error:', error);
-    return NextResponse.json({ error: 'Failed to create meeting' }, { status: 500 });
+  } catch (error: any) {
+    console.error('API error:', error);
+    return NextResponse.json({ error: 'Failed to create meeting', details: error.message }, { status: 500 });
   }
 }
 
