@@ -24,12 +24,13 @@ export default function MeetingPage({ params }: PageProps) {
   const [selectedSlots, setSelectedSlots] = useState<Set<string>>(new Set());
   const [isSelecting, setIsSelecting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [userId] = useState(() => Math.random().toString(36).substring(2, 11));
+  const [userId, setUserId] = useState("");
   const [copied, setCopied] = useState(false);
 
-  // Fix hydration issues
+  // Fix hydration issues - generate userId on client only
   useEffect(() => {
     setMounted(true);
+    setUserId(Math.random().toString(36).substring(2, 11));
   }, []);
 
   // Fetch meeting from database
