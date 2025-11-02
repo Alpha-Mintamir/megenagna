@@ -70,7 +70,12 @@ export default function MeetingPage({ params }: PageProps) {
     fetchMeeting();
   }, [params.id, router, mounted]);
 
-  if (!mounted || loading) {
+  // Avoid rendering on the server to prevent hydration mismatches (timezone/locale)
+  if (!mounted) {
+    return null;
+  }
+
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center ethiopian-pattern">
         <div className="text-center">
