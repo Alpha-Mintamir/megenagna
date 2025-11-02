@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Users, Calendar, Share2, Copy, Check, Sparkles } from "lucide-react";
 import { 
@@ -379,7 +379,7 @@ export default function MeetingPage({ params }: PageProps) {
 
               {/* Time Slots */}
               {timeSlots.map((time) => (
-                <>
+                <React.Fragment key={`group-${time}`}>
                   <div key={`time-${time}`} className="sticky left-0 bg-gradient-to-r from-white to-gray-50 z-10 p-3 text-right font-bold text-gray-800 border-r-4 border-ethiopian-green/20 rounded-l-lg">
                     <span className="text-lg">{time}</span>
                   </div>
@@ -410,7 +410,7 @@ export default function MeetingPage({ params }: PageProps) {
                       </div>
                     );
                   })}
-                </>
+                </React.Fragment>
               ))}
             </div>
           </div>
