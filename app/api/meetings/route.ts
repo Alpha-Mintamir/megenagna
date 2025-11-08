@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
     };
 
-    rememberMeeting(meeting);
+    await rememberMeeting(meeting);
     
     try {
       const client = await Promise.race([
