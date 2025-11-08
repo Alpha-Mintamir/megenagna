@@ -47,25 +47,27 @@ function cloneMeeting(meeting: MeetingRecord): MeetingRecord {
   };
 }
 
-export function rememberMeeting(meeting: MeetingRecord): void {
+export async function rememberMeeting(meeting: MeetingRecord): Promise<void> {
   store.set(meeting.id, cloneMeeting(meeting));
 }
 
-export function getRememberedMeeting(id: string): MeetingRecord | undefined {
+export async function getRememberedMeeting(
+  id: string
+): Promise<MeetingRecord | undefined> {
   const meeting = store.get(id);
   return meeting ? cloneMeeting(meeting) : undefined;
 }
 
-export function listRememberedMeetings(): MeetingRecord[] {
+export async function listRememberedMeetings(): Promise<MeetingRecord[]> {
   return Array.from(store.values()).map(cloneMeeting);
 }
 
-export function upsertAvailabilityInMemory(
+export async function upsertAvailabilityInMemory(
   meetingId: string,
   userId: string,
   userName: string,
   slots: string[]
-): MeetingRecord | undefined {
+): Promise<MeetingRecord | undefined> {
   const meeting = store.get(meetingId);
   if (!meeting) {
     return undefined;

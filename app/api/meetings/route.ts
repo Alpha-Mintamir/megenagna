@@ -16,7 +16,7 @@ export async function GET() {
     return NextResponse.json({ meetings, source: 'database' });
   } catch (error) {
     console.warn('Database unavailable, serving meetings from memory:', error);
-    const meetings = listRememberedMeetings();
+    const meetings = await listRememberedMeetings();
 
     if (meetings.length > 0) {
       return NextResponse.json({ meetings, source: 'memory' });
@@ -33,11 +33,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { title, description, dateRange, timeRange, createdBy } = body;
-    
+
     if (!title || !dateRange || !timeRange || !createdBy) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
     }
-    
+
     const meeting: MeetingRecord = {
       id: `meeting-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       title,
@@ -49,7 +52,7 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
     };
 
-    rememberMeeting(meeting);
+    await rememberMeeting(meeting);
     
     try {
       const client = await Promise.race([
