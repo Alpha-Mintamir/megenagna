@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+import {
+  rememberMeeting,
+  getRememberedMeeting,
+  upsertAvailabilityInMemory,
+  MeetingRecord,
+} from '@/lib/inMemoryMeetings';
 
 // GET a specific meeting by ID
 export async function GET(
@@ -13,23 +19,27 @@ export async function GET(
     
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB || 'calendarr');
-    
+
     const meeting = await db.collection('meetings').findOne({ id: params.id });
     console.log('Meeting found:', !!meeting);
-    
-    if (!meeting) {
-      return NextResponse.json({ error: 'Meeting not found' }, { status: 404 });
+
+    if (meeting) {
+      const { _id, ...sanitized } = meeting as MeetingRecord & { _id?: unknown };
+      sanitized.availability = sanitized.availability ?? [];
+      rememberMeeting(sanitized);
+      return NextResponse.json({ meeting: sanitized, source: 'database' });
     }
-    
-    return NextResponse.json({ meeting });
   } catch (error: any) {
-    console.error('Database error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to fetch meeting', 
-      details: error.message,
-      mongoConfigured: !!process.env.MONGODB_URI 
-    }, { status: 500 });
+    console.warn('Database error, attempting memory fallback:', error);
   }
+
+  const fallbackMeeting = getRememberedMeeting(params.id);
+
+  if (fallbackMeeting) {
+    return NextResponse.json({ meeting: fallbackMeeting, source: 'memory' });
+  }
+
+  return NextResponse.json({ error: 'Meeting not found' }, { status: 404 });
 }
 
 // PATCH to update meeting (add availability)
@@ -47,35 +57,61 @@ export async function PATCH(
     
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB || 'calendarr');
-    
+
     // Check if user already has availability
     const meeting = await db.collection('meetings').findOne({ id: params.id });
-    
+
     if (!meeting) {
+      const fallback = upsertAvailabilityInMemory(
+        params.id,
+        userId,
+        userName,
+        slots
+      );
+
+      if (fallback) {
+        return NextResponse.json({ meeting: fallback, source: 'memory' });
+      }
+
       return NextResponse.json({ error: 'Meeting not found' }, { status: 404 });
     }
-    
+
+    const uniqueSlots = Array.from(new Set(slots)).sort();
     const existingEntry = meeting.availability?.find((a: any) => a.userId === userId);
-    
+
     if (existingEntry) {
       // Update existing entry
       await db.collection('meetings').updateOne(
         { id: params.id, 'availability.userId': userId },
-        { $set: { 'availability.$.slots': slots } } as any
+        { $set: { 'availability.$.slots': uniqueSlots } } as any
       );
     } else {
       // Add new entry
       await db.collection('meetings').updateOne(
         { id: params.id },
-        { $push: { availability: { userId, userName, slots } } } as any
+        { $push: { availability: { userId, userName, slots: uniqueSlots } } } as any
       );
     }
-    
+
     const updatedMeeting = await db.collection('meetings').findOne({ id: params.id });
-    
-    return NextResponse.json({ meeting: updatedMeeting });
+    const { _id, ...sanitized } = updatedMeeting as MeetingRecord & { _id?: unknown };
+    sanitized.availability = sanitized.availability ?? [];
+    rememberMeeting(sanitized);
+
+    return NextResponse.json({ meeting: sanitized, source: 'database' });
   } catch (error) {
-    console.error('Database error:', error);
+    console.warn('Database error during update, attempting memory fallback:', error);
+    const fallback = upsertAvailabilityInMemory(
+      params.id,
+      userId,
+      userName,
+      slots
+    );
+
+    if (fallback) {
+      return NextResponse.json({ meeting: fallback, source: 'memory' });
+    }
+
     return NextResponse.json({ error: 'Failed to update meeting' }, { status: 500 });
   }
 }

@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+import {
+  rememberMeeting,
+  listRememberedMeetings,
+  MeetingRecord,
+} from '@/lib/inMemoryMeetings';
 
 // GET all meetings (for debugging) or POST to create a new meeting
 export async function GET() {
@@ -7,11 +12,20 @@ export async function GET() {
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB || 'calendarr');
     const meetings = await db.collection('meetings').find({}).toArray();
-    
-    return NextResponse.json({ meetings });
+
+    return NextResponse.json({ meetings, source: 'database' });
   } catch (error) {
-    console.error('Database error:', error);
-    return NextResponse.json({ error: 'Failed to fetch meetings' }, { status: 500 });
+    console.warn('Database unavailable, serving meetings from memory:', error);
+    const meetings = listRememberedMeetings();
+
+    if (meetings.length > 0) {
+      return NextResponse.json({ meetings, source: 'memory' });
+    }
+
+    return NextResponse.json(
+      { error: 'Failed to fetch meetings' },
+      { status: 500 }
+    );
   }
 }
 
@@ -24,7 +38,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
     
-    const meeting = {
+    const meeting: MeetingRecord = {
       id: `meeting-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       title,
       description: description || '',
@@ -34,6 +48,8 @@ export async function POST(request: NextRequest) {
       availability: [],
       createdAt: new Date().toISOString(),
     };
+
+    rememberMeeting(meeting);
     
     try {
       const client = await Promise.race([
