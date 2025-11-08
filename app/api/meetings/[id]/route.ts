@@ -26,14 +26,14 @@ export async function GET(
     if (meeting) {
       const { _id, ...sanitized } = meeting as MeetingRecord & { _id?: unknown };
       sanitized.availability = sanitized.availability ?? [];
-      rememberMeeting(sanitized);
+      await rememberMeeting(sanitized);
       return NextResponse.json({ meeting: sanitized, source: 'database' });
     }
   } catch (error: any) {
     console.warn('Database error, attempting memory fallback:', error);
   }
 
-  const fallbackMeeting = getRememberedMeeting(params.id);
+  const fallbackMeeting = await getRememberedMeeting(params.id);
 
   if (fallbackMeeting) {
     return NextResponse.json({ meeting: fallbackMeeting, source: 'memory' });
@@ -47,13 +47,14 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const body = await request.json();
+  const { userId, userName, slots } = body;
+  
+  if (!userId || !userName || !slots) {
+    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  }
+
   try {
-    const body = await request.json();
-    const { userId, userName, slots } = body;
-    
-    if (!userId || !userName || !slots) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
     
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB || 'calendarr');
@@ -62,7 +63,7 @@ export async function PATCH(
     const meeting = await db.collection('meetings').findOne({ id: params.id });
 
     if (!meeting) {
-      const fallback = upsertAvailabilityInMemory(
+      const fallback = await upsertAvailabilityInMemory(
         params.id,
         userId,
         userName,
@@ -96,12 +97,12 @@ export async function PATCH(
     const updatedMeeting = await db.collection('meetings').findOne({ id: params.id });
     const { _id, ...sanitized } = updatedMeeting as MeetingRecord & { _id?: unknown };
     sanitized.availability = sanitized.availability ?? [];
-    rememberMeeting(sanitized);
+    await rememberMeeting(sanitized);
 
     return NextResponse.json({ meeting: sanitized, source: 'database' });
   } catch (error) {
     console.warn('Database error during update, attempting memory fallback:', error);
-    const fallback = upsertAvailabilityInMemory(
+    const fallback = await upsertAvailabilityInMemory(
       params.id,
       userId,
       userName,

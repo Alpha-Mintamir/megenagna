@@ -16,7 +16,7 @@ export async function GET() {
     return NextResponse.json({ meetings, source: 'database' });
   } catch (error) {
     console.warn('Database unavailable, serving meetings from memory:', error);
-    const meetings = listRememberedMeetings();
+    const meetings = await listRememberedMeetings();
 
     if (meetings.length > 0) {
       return NextResponse.json({ meetings, source: 'memory' });
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
     };
 
-    rememberMeeting(meeting);
+    await rememberMeeting(meeting);
     
     try {
       const client = await Promise.race([
