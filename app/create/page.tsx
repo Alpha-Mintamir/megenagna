@@ -50,14 +50,24 @@ export default function CreateMeeting() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create meeting');
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || errorData.details || 'Failed to create meeting';
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
+      
+      if (!data.meeting || !data.meeting.id) {
+        throw new Error('Invalid response from server');
+      }
+      
+      // Small delay to ensure database write is complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       router.push(`/meeting/${data.meeting.id}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating meeting:', error);
-      alert('Failed to create meeting. Please try again.');
+      alert(`Failed to create meeting: ${error.message || 'Please try again.'}`);
     }
   };
 

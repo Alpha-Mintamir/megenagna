@@ -12,16 +12,23 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const meetingId = params.id;
+  console.log('GET /api/meetings/[id] - ID:', meetingId);
+  console.log('MONGODB_URI exists:', !!process.env.MONGODB_URI);
+  console.log('MONGODB_DB:', process.env.MONGODB_DB);
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  
   try {
-    console.log('GET /api/meetings/[id] - ID:', params.id);
-    console.log('MONGODB_URI exists:', !!process.env.MONGODB_URI);
-    console.log('MONGODB_DB:', process.env.MONGODB_DB);
+    const client = await Promise.race([
+      clientPromise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), 10000))
+    ]) as any;
     
-    const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB || 'calendarr');
-
-    const meeting = await db.collection('meetings').findOne({ id: params.id });
-    console.log('Meeting found:', !!meeting);
+    const meeting = await db.collection('meetings').findOne({ id: meetingId });
+    
+    console.log('Meeting found in DB:', !!meeting);
+    console.log('Meeting ID searched:', meetingId);
 
     if (meeting) {
       const { _id, ...sanitized } = meeting as MeetingRecord & { _id?: unknown };
@@ -30,15 +37,28 @@ export async function GET(
       return NextResponse.json({ meeting: sanitized, source: 'database' });
     }
   } catch (error: any) {
-    console.warn('Database error, attempting memory fallback:', error);
+    console.error('Database error:', error.message);
+    console.error('Full error:', error);
+    
+    // In production, don't fall back to memory (serverless doesn't share memory)
+    // Only use memory fallback in development
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Attempting memory fallback (dev only)');
+      const fallbackMeeting = await getRememberedMeeting(meetingId);
+      if (fallbackMeeting) {
+        return NextResponse.json({ meeting: fallbackMeeting, source: 'memory' });
+      }
+    }
   }
 
-  const fallbackMeeting = await getRememberedMeeting(params.id);
-
+  // Check memory as last resort (only works in dev or if same instance)
+  const fallbackMeeting = await getRememberedMeeting(meetingId);
   if (fallbackMeeting) {
+    console.log('Found meeting in memory fallback');
     return NextResponse.json({ meeting: fallbackMeeting, source: 'memory' });
   }
 
+  console.error('Meeting not found:', meetingId);
   return NextResponse.json({ error: 'Meeting not found' }, { status: 404 });
 }
 

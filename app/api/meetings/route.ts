@@ -49,23 +49,40 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
     };
 
-    await rememberMeeting(meeting);
-    
+    // In production, MongoDB MUST succeed - don't rely on memory fallback
+    // because serverless functions don't share memory
     try {
       const client = await Promise.race([
         clientPromise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), 3000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), 10000))
       ]) as any;
       
       const db = client.db(process.env.MONGODB_DB || 'calendarr');
       await db.collection('meetings').insertOne(meeting);
-      console.log('✅ Meeting saved to MongoDB');
+      console.log('✅ Meeting saved to MongoDB:', meeting.id);
+      
+      // Also store in memory as backup
+      await rememberMeeting(meeting);
+      
+      return NextResponse.json({ meeting }, { status: 201 });
     } catch (dbError: any) {
-      console.warn('⚠️ MongoDB unavailable, meeting created in-memory only:', dbError.message);
-      // Continue without database - meeting is still created
+      console.error('❌ MongoDB save failed:', dbError.message);
+      console.error('Full error:', dbError);
+      
+      // In production, fail if MongoDB is unavailable
+      // In development, allow memory fallback
+      if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json({ 
+          error: 'Failed to save meeting to database', 
+          details: dbError.message 
+        }, { status: 500 });
+      }
+      
+      // Development fallback
+      console.warn('⚠️ MongoDB unavailable, using memory fallback (dev only)');
+      await rememberMeeting(meeting);
+      return NextResponse.json({ meeting }, { status: 201 });
     }
-    
-    return NextResponse.json({ meeting }, { status: 201 });
   } catch (error: any) {
     console.error('API error:', error);
     return NextResponse.json({ error: 'Failed to create meeting', details: error.message }, { status: 500 });
