@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import MobileBlock from '@/components/MobileBlock'
 
 export const metadata: Metadata = {
   title: 'Megenagna - መገናኛ | Ethiopian Calendar Scheduler',
@@ -14,7 +15,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <MobileBlock />
+        {children}
+      </body>
     </html>
   )
 }
