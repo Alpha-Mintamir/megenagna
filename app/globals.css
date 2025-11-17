@@ -50,6 +50,37 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Subtle bounce animation for FAB */
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+/* Mobile-optimized border */
+@media (max-width: 768px) {
+  .border-3 {
+    border-width: 3px;
+  }
+}
+
 /* Prevent text selection during drag */
 .select-none {
   -webkit-user-select: none;

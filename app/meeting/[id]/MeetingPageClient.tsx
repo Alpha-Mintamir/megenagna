@@ -230,87 +230,148 @@ export default function MeetingPageClient({ meetingId }: Props) {
   };
 
   return (
-    <div className="min-h-screen ethiopian-pattern" onMouseUp={handleMouseUp}>
-      {/* Header */}
-      <header className="ethiopian-border bg-white shadow-xl">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6 md:py-8">
-          <button
-            onClick={() => router.push('/')}
-            className="flex items-center gap-2 text-gray-600 hover:text-ethiopian-green mb-4 sm:mb-6 font-semibold transition-colors group text-sm sm:text-base"
-          >
-            <ArrowLeft size={18} className="sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform" />
-            <span>Back to Home</span>
-          </button>
-          
-          <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-4 sm:gap-6">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <Sparkles className="text-ethiopian-green flex-shrink-0" size={24} style={{ width: '24px', height: '24px' }} />
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 break-words">
+    <div className="min-h-screen ethiopian-pattern pb-24 md:pb-0" onMouseUp={handleMouseUp}>
+      {/* Mobile-Optimized Header */}
+      <header className="ethiopian-border bg-white shadow-xl sticky top-0 z-40 md:relative">
+        <div className="max-w-7xl mx-auto px-4 py-3 md:py-8">
+          {/* Mobile: Compact header */}
+          <div className="md:hidden">
+            <div className="flex items-center gap-3 mb-3">
+              <button
+                onClick={() => router.push('/')}
+                className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors touch-manipulation"
+              >
+                <ArrowLeft size={20} className="text-gray-600" />
+              </button>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-base font-bold text-gray-900 truncate">
                   {meeting.title}
                 </h1>
-              </div>
-              {meeting.description && (
-                <p className="text-gray-600 text-sm sm:text-base md:text-lg mb-3 sm:mb-4 ml-7 sm:ml-11">{meeting.description}</p>
-              )}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 text-xs sm:text-sm text-gray-600 ml-7 sm:ml-11">
-                <span className="flex items-center gap-2 bg-ethiopian-green/10 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full">
-                  <Calendar size={16} className="sm:w-[18px] sm:h-[18px] text-ethiopian-green" />
-                  <span className="font-semibold whitespace-nowrap">
-                    {new Date(meeting.dateRange.start).toISOString().split('T')[0]} - {new Date(meeting.dateRange.end).toISOString().split('T')[0]}
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[10px] text-gray-500">
+                    {new Date(meeting.dateRange.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(meeting.dateRange.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </span>
-                </span>
-                <span className="flex items-center gap-2 bg-ethiopian-yellow/20 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full">
-                  <Users size={16} className="sm:w-[18px] sm:h-[18px] text-yellow-700" />
-                  <span className="font-ethiopic font-bold">{toGeezNumeral(meeting.availability.length)}</span>
-                  <span className="font-semibold">responses</span>
-                </span>
+                  <span className="text-[10px] text-gray-500">·</span>
+                  <span className="text-[10px] font-ethiopic text-ethiopian-green font-bold">{toGeezNumeral(meeting.availability.length)}</span>
+                  <span className="text-[10px] text-gray-500">responses</span>
+                </div>
               </div>
+              <button
+                onClick={copyLink}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-ethiopian-green/10 hover:bg-ethiopian-green/20 transition-colors touch-manipulation"
+              >
+                {copied ? <Check size={18} className="text-ethiopian-green" /> : <Share2 size={18} className="text-ethiopian-green" />}
+              </button>
             </div>
-            
+          </div>
+          
+          {/* Desktop: Full header */}
+          <div className="hidden md:block">
             <button
-              onClick={copyLink}
-              className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-ethiopian-green to-green-600 text-white rounded-xl hover:shadow-xl transition-all font-semibold text-sm sm:text-base w-full sm:w-auto"
+              onClick={() => router.push('/')}
+              className="flex items-center gap-2 text-gray-600 hover:text-ethiopian-green mb-6 font-semibold transition-colors group"
             >
-              {copied ? <Check size={18} className="sm:w-5 sm:h-5" /> : <Share2 size={18} className="sm:w-5 sm:h-5" />}
-              {copied ? "Copied!" : "Share Link"}
+              <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+              <span>Back to Home</span>
             </button>
+            
+            <div className="flex flex-row items-start justify-between gap-6">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-3">
+                  <Sparkles className="text-ethiopian-green" size={32} />
+                  <h1 className="text-4xl font-bold text-gray-900 break-words">
+                    {meeting.title}
+                  </h1>
+                </div>
+                {meeting.description && (
+                  <p className="text-gray-600 text-lg mb-4 ml-11">{meeting.description}</p>
+                )}
+                <div className="flex items-center gap-6 text-sm text-gray-600 ml-11">
+                  <span className="flex items-center gap-2 bg-ethiopian-green/10 px-4 py-2 rounded-full">
+                    <Calendar size={18} className="text-ethiopian-green" />
+                    <span className="font-semibold">
+                      {new Date(meeting.dateRange.start).toISOString().split('T')[0]} - {new Date(meeting.dateRange.end).toISOString().split('T')[0]}
+                    </span>
+                  </span>
+                  <span className="flex items-center gap-2 bg-ethiopian-yellow/20 px-4 py-2 rounded-full">
+                    <Users size={18} className="text-yellow-700" />
+                    <span className="font-ethiopic font-bold">{toGeezNumeral(meeting.availability.length)}</span>
+                    <span className="font-semibold">responses</span>
+                  </span>
+                </div>
+              </div>
+              
+              <button
+                onClick={copyLink}
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-ethiopian-green to-green-600 text-white rounded-xl hover:shadow-xl transition-all font-semibold"
+              >
+                {copied ? <Check size={20} /> : <Share2 size={20} />}
+                {copied ? "Copied!" : "Share Link"}
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-4 sm:py-6 md:py-8">
-        {/* User Input Section */}
+        {/* Mobile: Sticky Bottom Input */}
         {!hasSubmitted && (
-          <div className="bg-gradient-to-br from-white to-ethiopian-green/5 rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 ethiopian-border animate-fadeIn">
-            <h2 className="text-xl sm:text-2xl font-bold mb-2 text-gray-900">
+          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-2xl z-40 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <input
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="Your name"
+                className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base touch-manipulation"
+              />
+              <button
+                onClick={handleSubmit}
+                disabled={selectedSlots.size === 0 || !userName.trim()}
+                className="px-6 py-3 bg-gradient-to-r from-ethiopian-green to-green-600 text-white rounded-xl font-bold text-base shadow-lg disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all touch-manipulation flex items-center justify-center min-w-[80px]"
+              >
+                <Check size={20} />
+                Submit
+              </button>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-gray-600">
+              <div className="w-4 h-4 bg-blue-500 border-2 border-blue-600 rounded"></div>
+              <p>
+                Tap slots to select · <span className="font-ethiopic font-bold text-ethiopian-green">{toGeezNumeral(selectedSlots.size)}</span> selected
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {/* Desktop: User Input Section */}
+        {!hasSubmitted && (
+          <div className="hidden md:block bg-gradient-to-br from-white to-ethiopian-green/5 rounded-2xl shadow-2xl p-8 mb-8 ethiopian-border animate-fadeIn">
+            <h2 className="text-2xl font-bold mb-2 text-gray-900">
               Mark Your Availability
             </h2>
-            <p className="text-gray-600 text-sm sm:text-base mb-4 sm:mb-6">Select the times when you're free to meet</p>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+            <p className="text-gray-600 mb-6">Select the times when you're free to meet</p>
+            <div className="flex items-center gap-4">
               <input
                 type="text"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
                 placeholder="Enter your name"
-                className="flex-1 px-4 sm:px-6 py-3 sm:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base sm:text-lg"
+                className="flex-1 px-6 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-lg"
               />
               <button
                 onClick={handleSubmit}
                 disabled={selectedSlots.size === 0 || !userName.trim()}
-                className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-ethiopian-green to-green-600 text-white rounded-xl font-bold text-base sm:text-lg hover:shadow-2xl disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                className="px-8 py-4 bg-gradient-to-r from-ethiopian-green to-green-600 text-white rounded-xl font-bold text-lg hover:shadow-2xl disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all flex items-center gap-2"
               >
-                <Check size={20} className="sm:w-6 sm:h-6" />
+                <Check size={24} />
                 Submit
               </button>
             </div>
-            <div className="flex items-start sm:items-center gap-2 mt-3 sm:mt-4 text-xs sm:text-sm text-gray-600">
-              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-blue-500 border-2 border-blue-600 rounded flex-shrink-0 mt-0.5 sm:mt-0"></div>
-              <p className="break-words">
-                <span className="hidden sm:inline">Click and drag to select times when you're available · </span>
-                <span className="sm:hidden">Tap to select times · </span>
-                Selected: <span className="font-ethiopic font-bold text-ethiopian-green">{toGeezNumeral(selectedSlots.size)}</span> slots
+            <div className="flex items-center gap-2 mt-4 text-sm text-gray-600">
+              <div className="w-6 h-6 bg-blue-500 border-2 border-blue-600 rounded"></div>
+              <p>
+                Click and drag to select times when you're available · Selected: <span className="font-ethiopic font-bold text-ethiopian-green">{toGeezNumeral(selectedSlots.size)}</span> slots
               </p>
             </div>
           </div>

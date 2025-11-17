@@ -1,0 +1,31 @@
+name: megenagna
+region: nyc
+services:
+  - name: web
+    github:
+      repo: Alpha-Mintamir/megenagna
+      branch: main
+      deploy_on_push: true
+    build_command: npm run build
+    run_command: npm start
+    environment_slug: node-js
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    http_port: 3000
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        scope: RUN_TIME
+        type: SECRET
+      - key: MONGODB_DB
+        value: calendarr
+        scope: RUN_TIME
+    health_check:
+      http_path: /
+      initial_delay_seconds: 10
+      period_seconds: 10
+      timeout_seconds: 5
+      success_threshold: 1
+      failure_threshold: 3
+
