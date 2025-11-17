@@ -66,6 +66,59 @@ export default function MeetingPageClient({ meetingId }: Props) {
     fetchMeeting();
   }, [meetingId]);
 
+  // Generate time slots - MUST be called before any early returns
+  const timeSlots = useMemo(() => {
+    if (!meeting) return [];
+    const slots = [];
+    for (let hour = meeting.timeRange.start.hour; hour < meeting.timeRange.end.hour; hour++) {
+      slots.push(`${hour.toString().padStart(2, '0')}:00`);
+    }
+    return slots;
+  }, [meeting]);
+
+  // Generate date range - MUST be called before any early returns
+  const dates = useMemo(() => {
+    if (!meeting) return [];
+    const start = new Date(meeting.dateRange.start);
+    const end = new Date(meeting.dateRange.end);
+    const dateArray = [];
+    
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      dateArray.push(new Date(d));
+    }
+    
+    return dateArray;
+  }, [meeting]);
+
+  // Calculate availability count for each slot - MUST be called before any early returns
+  const slotCounts = useMemo(() => {
+    if (!meeting) return {};
+    const counts: { [key: string]: number } = {};
+    
+    meeting.availability.forEach((entry: any) => {
+      entry.slots.forEach((slot: string) => {
+        counts[slot] = (counts[slot] || 0) + 1;
+      });
+    });
+    
+    return counts;
+  }, [meeting]);
+
+  const maxCount = useMemo(() => {
+    const values = Object.values(slotCounts);
+    return values.length > 0 ? Math.max(...values, 0) : 0;
+  }, [slotCounts]);
+
+  // Mouse event handlers - MUST be defined before early returns
+  const handleMouseUp = () => {
+    setIsSelecting(false);
+  };
+
+  useEffect(() => {
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => document.removeEventListener('mouseup', handleMouseUp);
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center ethiopian-pattern">
@@ -93,49 +146,6 @@ export default function MeetingPageClient({ meetingId }: Props) {
     );
   }
 
-  // Generate time slots
-  const timeSlots = useMemo(() => {
-    if (!meeting) return [];
-    const slots = [];
-    for (let hour = meeting.timeRange.start.hour; hour < meeting.timeRange.end.hour; hour++) {
-      slots.push(`${hour.toString().padStart(2, '0')}:00`);
-    }
-    return slots;
-  }, [meeting]);
-
-  // Generate date range
-  const dates = useMemo(() => {
-    if (!meeting) return [];
-    const start = new Date(meeting.dateRange.start);
-    const end = new Date(meeting.dateRange.end);
-    const dateArray = [];
-    
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      dateArray.push(new Date(d));
-    }
-    
-    return dateArray;
-  }, [meeting]);
-
-  // Calculate availability count for each slot
-  const slotCounts = useMemo(() => {
-    if (!meeting) return {};
-    const counts: { [key: string]: number } = {};
-    
-    meeting.availability.forEach((entry: any) => {
-      entry.slots.forEach((slot: string) => {
-        counts[slot] = (counts[slot] || 0) + 1;
-      });
-    });
-    
-    return counts;
-  }, [meeting]);
-
-  const maxCount = useMemo(() => {
-    const values = Object.values(slotCounts);
-    return values.length > 0 ? Math.max(...values, 0) : 0;
-  }, [slotCounts]);
-
   const handleSlotClick = (date: Date, time: string) => {
     if (hasSubmitted) return;
     
@@ -162,15 +172,6 @@ export default function MeetingPageClient({ meetingId }: Props) {
       handleSlotClick(date, time);
     }
   };
-
-  const handleMouseUp = () => {
-    setIsSelecting(false);
-  };
-
-  useEffect(() => {
-    document.addEventListener('mouseup', handleMouseUp);
-    return () => document.removeEventListener('mouseup', handleMouseUp);
-  }, []);
 
   const handleSubmit = async () => {
     if (!userName.trim()) {
