@@ -6,7 +6,16 @@ if (!uri) {
   console.warn('Warning: MONGODB_URI is not set. Database features will not work.');
 }
 
-const options = {};
+// MongoDB connection options
+// DigitalOcean MongoDB requires TLS, but the connection string usually includes tls=true
+// These options ensure compatibility with both MongoDB Atlas and DigitalOcean MongoDB
+const options: {
+  tls?: boolean;
+  tlsAllowInvalidCertificates?: boolean;
+  retryWrites?: boolean;
+} = {
+  retryWrites: true, // Enable retryable writes for better reliability
+};
 
 let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
