@@ -44,6 +44,12 @@ body {
   background: #00843D;
 }
 
+/* Touch manipulation for better mobile interaction */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* Prevent text selection during drag */
 .select-none {
   -webkit-user-select: none;

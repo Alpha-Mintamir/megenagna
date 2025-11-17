@@ -75,34 +75,34 @@ export default function CreateMeeting() {
     <div className="min-h-screen ethiopian-pattern">
       {/* Header */}
       <header className="ethiopian-border bg-white shadow-xl">
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto px-4 py-4 sm:py-6 md:py-8">
             <button
               onClick={() => router.push('/')}
-              className="flex items-center gap-2 text-gray-600 hover:text-ethiopian-green mb-6 font-semibold transition-colors group"
+              className="flex items-center gap-2 text-gray-600 hover:text-ethiopian-green mb-4 sm:mb-6 font-semibold transition-colors group text-sm sm:text-base"
             >
-              <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+              <ArrowLeft size={18} className="sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform" />
               <span>Back to Home</span>
             </button>
-          <div className="flex items-center gap-4">
-            <Sparkles className="text-ethiopian-green" size={40} />
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Sparkles className="text-ethiopian-green flex-shrink-0" size={32} style={{ width: '32px', height: '32px' }} />
             <div>
-              <h1 className="text-4xl font-bold text-ethiopian-green mb-1 flex items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-ethiopian-green mb-1 flex flex-wrap items-center gap-2 sm:gap-3">
                 <span className="font-ethiopic">መገናኛ</span>
                 <span>·</span>
                 <span>Create Meeting</span>
               </h1>
-              <p className="text-xl text-gray-700">Set up a meeting and share with your team</p>
+              <p className="text-base sm:text-lg md:text-xl text-gray-700">Set up a meeting and share with your team</p>
             </div>
           </div>
         </div>
       </header>
 
       {/* Form */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-2xl p-10 ethiopian-border">
+      <main className="max-w-4xl mx-auto px-4 py-4 sm:py-6 md:py-8">
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 md:p-10 ethiopian-border">
           {/* Meeting Title */}
-          <div className="mb-8">
-            <label className="block text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+          <div className="mb-6 sm:mb-8">
+            <label className="block text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
               <span>Meeting Title</span>
               <span className="text-ethiopian-red">*</span>
             </label>
@@ -111,14 +111,14 @@ export default function CreateMeeting() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Team Weekly Standup, Project Review Meeting"
-              className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-lg"
+              className="w-full px-4 sm:px-6 py-3 sm:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base sm:text-lg"
               required
             />
           </div>
 
           {/* Your Name */}
-          <div className="mb-8">
-            <label className="block text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+          <div className="mb-6 sm:mb-8">
+            <label className="block text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
               <span>Your Name</span>
               <span className="text-ethiopian-red">*</span>
             </label>
@@ -127,40 +127,40 @@ export default function CreateMeeting() {
               value={creatorName}
               onChange={(e) => setCreatorName(e.target.value)}
               placeholder="Enter your name"
-              className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-lg"
+              className="w-full px-4 sm:px-6 py-3 sm:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base sm:text-lg"
               required
             />
           </div>
 
           {/* Description */}
-          <div className="mb-8">
-            <label className="block text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+          <div className="mb-6 sm:mb-8">
+            <label className="block text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
               <span>Description</span>
-              <span className="text-sm text-gray-500 font-normal">(Optional)</span>
+              <span className="text-xs sm:text-sm text-gray-500 font-normal">(Optional)</span>
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Add any additional details about the meeting..."
               rows={4}
-              className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-lg resize-none"
+              className="w-full px-4 sm:px-6 py-3 sm:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base sm:text-lg resize-none"
             />
           </div>
 
           {/* Date Range */}
-          <div className="mb-8">
-            <label className="block text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <Calendar size={24} className="text-ethiopian-green" />
+          <div className="mb-6 sm:mb-8">
+            <label className="block text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
+              <Calendar size={20} className="sm:w-6 sm:h-6 text-ethiopian-green" />
               <span>Date Range</span>
             </label>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Start Date</label>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-lg"
+                  className="w-full px-4 sm:px-6 py-3 sm:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base sm:text-lg"
                   required
                 />
               </div>
@@ -171,7 +171,7 @@ export default function CreateMeeting() {
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   min={startDate}
-                  className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-lg"
+                  className="w-full px-4 sm:px-6 py-3 sm:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base sm:text-lg"
                   required
                 />
               </div>
@@ -179,12 +179,12 @@ export default function CreateMeeting() {
           </div>
 
           {/* Time Range */}
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-              <Clock size={18} />
+              <Clock size={16} className="sm:w-[18px] sm:h-[18px]" />
               Time Range (for each day)
             </label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-xs text-gray-600 mb-1">Start Time</label>
                 <select
@@ -217,17 +217,17 @@ export default function CreateMeeting() {
           </div>
 
           {/* Submit Button */}
-          <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pt-6 border-t border-gray-200 gap-3 sm:gap-0">
             <button
               type="button"
               onClick={() => router.push('/')}
-              className="px-6 py-3 text-gray-600 hover:text-gray-900"
+              className="px-6 py-3 text-gray-600 hover:text-gray-900 text-base sm:text-lg order-2 sm:order-1"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-ethiopian-green hover:bg-ethiopian-green/90 text-white px-8 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+              className="bg-ethiopian-green hover:bg-ethiopian-green/90 text-white px-6 sm:px-8 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all text-base sm:text-lg order-1 sm:order-2"
             >
               Create Meeting
             </button>
