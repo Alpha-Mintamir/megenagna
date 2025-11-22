@@ -18,6 +18,7 @@ export default function AvailabilityGrid() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragMode, setDragMode] = useState<'select' | 'deselect' | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const lastTouchTimeRef = useRef(0);
   
   if (selectedDates.length === 0) {
     return (
@@ -59,6 +60,9 @@ export default function AvailabilityGrid() {
   };
   
   const handleMouseDown = (date: Date, hour: number) => {
+    // Ignore mouse events that fire immediately after touch events
+    if (Date.now() - lastTouchTimeRef.current < 500) return;
+
     setIsDragging(true);
     const count = getAvailabilityCount(date, hour);
     const participant = participants.find(p => p.id === currentParticipant);
@@ -75,9 +79,7 @@ export default function AvailabilityGrid() {
   };
 
   const handleTouchStart = (date: Date, hour: number, e: React.TouchEvent) => {
-    // Prevent scrolling while dragging, but allow it for quick taps if needed
-    // However, for a grid, preventing default usually gives better drag control
-    // e.preventDefault(); 
+    lastTouchTimeRef.current = Date.now();
     
     setIsDragging(true);
     const slot = useSchedulerStore.getState().timeSlots.get(
@@ -245,13 +247,13 @@ export default function AvailabilityGrid() {
                       onMouseDown={() => handleMouseDown(date, hour)}
                       onMouseEnter={() => handleMouseEnter(date, hour)}
                       className={`
-                        flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 cursor-pointer transition-all touch-manipulation
+                        flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer transition-all touch-manipulation active:bg-gray-100 dark:active:bg-gray-600
                         ${getCellColor(date, hour)}
                         ${isAvailable ? 'ring-2 ring-inset ring-ethiopian-red' : ''}
                         active:opacity-80
                       `}
                     >
-                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      <span className="text-base font-semibold text-gray-700 dark:text-gray-300">
                         {formatHour(hour)}
                       </span>
                       {count > 0 && (
