@@ -120,9 +120,11 @@ export function gregorianToEthiopian(date: Date): EthiopianDate {
   const day = date.getDate();
   
   // Ethiopian year starts on Sept 11 (or Sept 12 in leap year)
+  // From Jan 1 to Sept 10, it's Year-8
+  // From Sept 11 to Dec 31, it's Year-7
   let ethYear = year - 8;
-  if (month < 9 || (month === 9 && day < 11)) {
-    ethYear--;
+  if (month > 9 || (month === 9 && day >= 11)) {
+    ethYear++;
   }
   
   // Calculate days from Ethiopian New Year
@@ -158,7 +160,8 @@ export function ethiopianToGregorian(ethDate: EthiopianDate): Date {
   const { year, month, day } = ethDate;
   
   // Ethiopian New Year in Gregorian calendar
-  const gregYear = year + 8;
+  // Ethiopian Year X starts in Gregorian Year X+7 (Sept 11/12)
+  const gregYear = year + 7;
   const newYear = new Date(gregYear, 8, 11); // Sept 11
   
   // Calculate days to add
