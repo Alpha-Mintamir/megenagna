@@ -21,6 +21,7 @@ export default function CreateMeeting() {
   const [endHour, setEndHour] = useState(17);
   const [duration, setDuration] = useState(1); // Duration in hours, default 1 hour
   const [creatorName, setCreatorName] = useState("");
+  const [calendarType, setCalendarType] = useState<'ethiopian' | 'gregorian' | 'both'>('ethiopian');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,25 +168,102 @@ export default function CreateMeeting() {
 
           {/* Date Range */}
           <div className="mb-6 sm:mb-8">
-            <label className="block text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
-              <Calendar size={20} className="sm:w-6 sm:h-6 text-ethiopian-green" />
-              <span>Date Range</span>
-            </label>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <label className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
+                <Calendar size={20} className="sm:w-6 sm:h-6 text-ethiopian-green" />
+                <span>Date Range</span>
+              </label>
+              
+              {/* Calendar System Selector */}
+              <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg self-start sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => setCalendarType('ethiopian')}
+                  className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${
+                    calendarType === 'ethiopian' 
+                      ? 'bg-white text-ethiopian-green shadow-sm border border-gray-200' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Ethiopian
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCalendarType('gregorian')}
+                  className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${
+                    calendarType === 'gregorian' 
+                      ? 'bg-white text-ethiopian-green shadow-sm border border-gray-200' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Gregorian
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCalendarType('both')}
+                  className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${
+                    calendarType === 'both' 
+                      ? 'bg-white text-ethiopian-green shadow-sm border border-gray-200' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Both
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
-                <EthiopianDatePicker
-                  label="Start Date"
-                  value={startDate}
-                  onChange={(date) => setStartDate(date)}
-                />
+                {(calendarType === 'ethiopian' || calendarType === 'both') && (
+                  <div className="mb-3">
+                    <EthiopianDatePicker
+                      label={calendarType === 'both' ? "Start Date (Ethiopian)" : "Start Date"}
+                      value={startDate}
+                      onChange={(date) => setStartDate(date)}
+                    />
+                  </div>
+                )}
+                {(calendarType === 'gregorian' || calendarType === 'both') && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      {calendarType === 'both' ? "Start Date (Gregorian)" : "Start Date"}
+                    </label>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="w-full px-4 sm:px-6 py-3 sm:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base sm:text-lg bg-white"
+                      required={calendarType === 'gregorian'}
+                    />
+                  </div>
+                )}
               </div>
               <div>
-                <EthiopianDatePicker
-                  label="End Date"
-                  value={endDate}
-                  onChange={(date) => setEndDate(date)}
-                  minDate={startDate}
-                />
+                {(calendarType === 'ethiopian' || calendarType === 'both') && (
+                  <div className="mb-3">
+                    <EthiopianDatePicker
+                      label={calendarType === 'both' ? "End Date (Ethiopian)" : "End Date"}
+                      value={endDate}
+                      onChange={(date) => setEndDate(date)}
+                      minDate={startDate}
+                    />
+                  </div>
+                )}
+                {(calendarType === 'gregorian' || calendarType === 'both') && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      {calendarType === 'both' ? "End Date (Gregorian)" : "End Date"}
+                    </label>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      min={startDate}
+                      className="w-full px-4 sm:px-6 py-3 sm:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base sm:text-lg bg-white"
+                      required={calendarType === 'gregorian'}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
