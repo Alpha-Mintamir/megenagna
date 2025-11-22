@@ -292,14 +292,57 @@ export default function CreateMeeting() {
         </form>
 
         {/* Info Box - Hidden on mobile to save space */}
-        <div className="hidden md:block mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="font-semibold text-blue-900 mb-2">How it works:</h3>
-          <ol className="list-decimal list-inside space-y-2 text-blue-800">
-            <li>Create your meeting with the date and time ranges you want to consider</li>
-            <li>Share the meeting link with your team members</li>
-            <li>Each person marks the times they're available</li>
-            <li>The calendar will show you which times work best for everyone</li>
-          </ol>
+        <div className="hidden md:block mt-12 mb-8 animate-fadeIn">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">How Megenagna Works</h3>
+            <p className="text-gray-600">Simple steps to coordinate your team</p>
+          </div>
+          
+          <div className="grid grid-cols-4 gap-6">
+            {/* Step 1 */}
+            <div className="bg-white rounded-xl p-6 shadow-lg border-b-4 border-ethiopian-green transform hover:-translate-y-1 transition-transform duration-300">
+              <div className="w-12 h-12 bg-ethiopian-green/10 rounded-full flex items-center justify-center mb-4 mx-auto text-ethiopian-green">
+                <Calendar size={24} />
+              </div>
+              <h4 className="font-bold text-gray-900 mb-2 text-center">1. Create</h4>
+              <p className="text-sm text-gray-600 text-center leading-relaxed">
+                Set your meeting details, date range, and meeting duration.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="bg-white rounded-xl p-6 shadow-lg border-b-4 border-ethiopian-yellow transform hover:-translate-y-1 transition-transform duration-300 delay-100">
+              <div className="w-12 h-12 bg-ethiopian-yellow/20 rounded-full flex items-center justify-center mb-4 mx-auto text-yellow-700">
+                <div className="font-bold text-xl">🔗</div>
+              </div>
+              <h4 className="font-bold text-gray-900 mb-2 text-center">2. Share</h4>
+              <p className="text-sm text-gray-600 text-center leading-relaxed">
+                Get a unique link and share it with your participants.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="bg-white rounded-xl p-6 shadow-lg border-b-4 border-ethiopian-red transform hover:-translate-y-1 transition-transform duration-300 delay-200">
+              <div className="w-12 h-12 bg-ethiopian-red/10 rounded-full flex items-center justify-center mb-4 mx-auto text-ethiopian-red">
+                <div className="font-bold text-xl">✅</div>
+              </div>
+              <h4 className="font-bold text-gray-900 mb-2 text-center">3. Vote</h4>
+              <p className="text-sm text-gray-600 text-center leading-relaxed">
+                Participants mark their available time slots easily.
+              </p>
+            </div>
+
+            {/* Step 4 */}
+            <div className="bg-white rounded-xl p-6 shadow-lg border-b-4 border-blue-500 transform hover:-translate-y-1 transition-transform duration-300 delay-300">
+              <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-4 mx-auto text-blue-600">
+                <Sparkles size={24} />
+              </div>
+              <h4 className="font-bold text-gray-900 mb-2 text-center">4. Schedule</h4>
+              <p className="text-sm text-gray-600 text-center leading-relaxed">
+                See the best times that work for everyone and book it!
+              </p>
+            </div>
+          </div>
         </div>
       </main>
     </div>
