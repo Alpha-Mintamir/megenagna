@@ -20,6 +20,20 @@ export default function AvailabilityGrid() {
   const gridRef = useRef<HTMLDivElement>(null);
   const lastTouchTimeRef = useRef(0);
   
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setDragMode(null);
+  };
+  
+  useEffect(() => {
+    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('touchend', handleMouseUp);
+    return () => {
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchend', handleMouseUp);
+    };
+  }, []);
+  
   if (selectedDates.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-12 text-center border-2 md:border-4 border-ethiopian-gold">
@@ -143,20 +157,6 @@ export default function AvailabilityGrid() {
     }
   };
   
-  const handleMouseUp = () => {
-    setIsDragging(false);
-    setDragMode(null);
-  };
-  
-  useEffect(() => {
-    document.addEventListener('mouseup', handleMouseUp);
-    document.addEventListener('touchend', handleMouseUp);
-    return () => {
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('touchend', handleMouseUp);
-    };
-  }, []);
-  
   const getCellColor = (date: Date, hour: number): string => {
     const count = getAvailabilityCount(date, hour);
     const totalParticipants = participants.length;
@@ -185,7 +185,7 @@ export default function AvailabilityGrid() {
           Mark Your Availability
         </h3>
         <p className="text-gray-600 dark:text-gray-400 text-xs md:text-sm mb-3 md:mb-4">
-          Tap time slots to mark when you're available. Green intensity shows how many people are available.
+          Tap time slots to mark when you&apos;re available. Green intensity shows how many people are available.
         </p>
         
         {/* Legend */}

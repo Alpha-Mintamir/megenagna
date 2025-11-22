@@ -140,7 +140,7 @@ export default function ParticipantPanel() {
       {currentParticipant && (
         <div className="mt-3 md:mt-4 p-2 md:p-3 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 dark:border-blue-500 rounded">
           <p className="text-xs md:text-sm text-blue-800 dark:text-blue-300">
-            <strong>Tip:</strong> Tap time slots on the availability grid to mark when you're free!
+            <strong>Tip:</strong> Tap time slots on the availability grid to mark when you&apos;re free!
           </p>
         </div>
       )}

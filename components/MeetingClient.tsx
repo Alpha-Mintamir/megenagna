@@ -59,6 +59,45 @@ export default function MeetingClient({ id }: Props) {
     fetchMeeting();
   }, [id, mounted]);
 
+  const handleMouseUp = () => setIsSelecting(false);
+
+  useEffect(() => {
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => document.removeEventListener('mouseup', handleMouseUp);
+  }, []);
+
+  // time slots generation - memoized with safe defaults
+  const timeSlots = useMemo(() => {
+    if (!meeting) return [];
+    const slots: string[] = [];
+    for (let hour = meeting.timeRange.start.hour; hour < meeting.timeRange.end.hour; hour++) {
+      slots.push(`${hour.toString().padStart(2, '0')}:00`);
+    }
+    return slots;
+  }, [meeting]);
+
+  const dates = useMemo(() => {
+    if (!meeting) return [];
+    const start = new Date(meeting.dateRange.start);
+    const end = new Date(meeting.dateRange.end);
+    const dateArray: Date[] = [];
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      dateArray.push(new Date(d));
+    }
+    return dateArray;
+  }, [meeting]);
+
+  const slotCounts = useMemo(() => {
+    if (!meeting) return {};
+    const counts: { [key: string]: number } = {};
+    meeting.availability.forEach((entry: any) => {
+      entry.slots.forEach((slot: string) => {
+        counts[slot] = (counts[slot] || 0) + 1;
+      });
+    });
+    return counts;
+  }, [meeting]);
+
   if (!mounted) return null;
   if (loading) {
     return (
@@ -81,35 +120,6 @@ export default function MeetingClient({ id }: Props) {
     );
   }
 
-  // time slots generation
-  const timeSlots = useMemo(() => {
-    const slots: string[] = [];
-    for (let hour = meeting.timeRange.start.hour; hour < meeting.timeRange.end.hour; hour++) {
-      slots.push(`${hour.toString().padStart(2, '0')}:00`);
-    }
-    return slots;
-  }, [meeting.timeRange]);
-
-  const dates = useMemo(() => {
-    const start = new Date(meeting.dateRange.start);
-    const end = new Date(meeting.dateRange.end);
-    const dateArray: Date[] = [];
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      dateArray.push(new Date(d));
-    }
-    return dateArray;
-  }, [meeting.dateRange]);
-
-  const slotCounts = useMemo(() => {
-    const counts: { [key: string]: number } = {};
-    meeting.availability.forEach((entry: any) => {
-      entry.slots.forEach((slot: string) => {
-        counts[slot] = (counts[slot] || 0) + 1;
-      });
-    });
-    return counts;
-  }, [meeting.availability]);
-
   const maxCount = Math.max(...Object.values(slotCounts), 0);
 
   const handleSlotClick = (date: Date, time: string) => {
@@ -129,13 +139,6 @@ export default function MeetingClient({ id }: Props) {
   const handleMouseEnter = (date: Date, time: string) => {
     if (isSelecting && !hasSubmitted) handleSlotClick(date, time);
   };
-
-  const handleMouseUp = () => setIsSelecting(false);
-
-  useEffect(() => {
-    document.addEventListener('mouseup', handleMouseUp);
-    return () => document.removeEventListener('mouseup', handleMouseUp);
-  }, []);
 
   const getSlotColor = (slotId: string) => {
     if (selectedSlots.has(slotId) && !hasSubmitted) return 'bg-blue-500 border-blue-600';
