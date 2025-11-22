@@ -2,13 +2,16 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Users, Calendar, Share2, Check, Sparkles } from "lucide-react";
+import { ArrowLeft, Users, Calendar, Share2, Check } from "lucide-react";
 import { 
   gregorianToEthiopian, 
   formatEthiopianDate, 
   ETHIOPIAN_DAYS,
   toGeezNumeral 
 } from "@/lib/ethiopian-calendar";
+import ThemeToggle from "@/components/ThemeToggle";
+import LanguageToggle from "@/components/LanguageToggle";
+import { useLanguage } from "@/components/LanguageProvider";
 
 interface Props {
   meetingId: string;
@@ -16,6 +19,7 @@ interface Props {
 
 export default function MeetingPageClient({ meetingId }: Props) {
   const router = useRouter();
+  const { t, language } = useLanguage();
   const [meeting, setMeeting] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
@@ -137,10 +141,10 @@ export default function MeetingPageClient({ meetingId }: Props) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center ethiopian-pattern">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-ethiopian-green border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-xl font-semibold text-gray-700">Loading meeting...</p>
+          <div className="w-12 h-12 border-[3px] border-ethiopian-green border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className={`text-lg font-medium text-gray-600 dark:text-gray-400 ${language === 'am' ? 'font-amharic' : ''}`}>{t.common.loading}</p>
         </div>
       </div>
     );
@@ -148,14 +152,14 @@ export default function MeetingPageClient({ meetingId }: Props) {
 
   if (!meeting) {
     return (
-      <div className="min-h-screen flex items-center justify-center ethiopian-pattern">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Meeting not found</h1>
+          <h1 className={`text-xl font-semibold text-gray-900 dark:text-white mb-4 ${language === 'am' ? 'font-amharic' : ''}`}>{t.meeting.meetingNotFound}</h1>
           <button
             onClick={() => router.push('/')}
-            className="px-6 py-3 bg-ethiopian-green text-white rounded-lg hover:bg-ethiopian-dark-green"
+            className={`px-5 py-2 bg-ethiopian-green text-white rounded-lg hover:bg-ethiopian-dark-green transition-colors ${language === 'am' ? 'font-amharic' : ''}`}
           >
-            Go Home
+            {t.meeting.goHome}
           </button>
         </div>
       </div>
@@ -211,7 +215,7 @@ export default function MeetingPageClient({ meetingId }: Props) {
 
   const handleSubmit = async () => {
     if (!userName.trim()) {
-      alert("Please enter your name");
+      alert(language === 'am' ? 'እባክዎ ስምዎን ያስገቡ' : 'Please enter your name');
       return;
     }
 
@@ -262,7 +266,7 @@ export default function MeetingPageClient({ meetingId }: Props) {
     const isSelected = isDurationBlockSelected(date, startHour, durationHours);
     
     if (isSelected && !hasSubmitted) {
-      return "bg-blue-500 border-blue-600";
+      return "bg-ethiopian-green border-ethiopian-green";
     }
     
     const count = getDurationBlockCount(date, startHour, durationHours);
@@ -270,11 +274,11 @@ export default function MeetingPageClient({ meetingId }: Props) {
     
     const intensity = count / Math.max(maxCount, 1);
     
-    if (intensity >= 0.8) return "bg-ethiopian-green border-ethiopian-green";
-    if (intensity >= 0.6) return "bg-green-400 border-green-500";
-    if (intensity >= 0.4) return "bg-ethiopian-yellow border-yellow-500";
-    if (intensity >= 0.2) return "bg-yellow-300 border-yellow-400";
-    return "bg-orange-200 border-orange-300";
+    if (intensity >= 0.8) return "bg-green-500 border-green-500";
+    if (intensity >= 0.6) return "bg-green-400 border-green-400";
+    if (intensity >= 0.4) return "bg-yellow-400 border-yellow-400";
+    if (intensity >= 0.2) return "bg-yellow-300 border-yellow-300";
+    return "bg-orange-200 border-orange-200";
   };
 
   const copyLink = () => {
@@ -285,83 +289,91 @@ export default function MeetingPageClient({ meetingId }: Props) {
   };
 
   return (
-    <div className="min-h-screen ethiopian-pattern pb-24 md:pb-0" onMouseUp={handleMouseUp}>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-24 md:pb-0" onMouseUp={handleMouseUp}>
       {/* Mobile-Optimized Header */}
-      <header className="ethiopian-border bg-white shadow-xl sticky top-0 z-40 md:relative">
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 md:relative">
         <div className="max-w-7xl mx-auto px-4 py-3 md:py-8">
           {/* Mobile: Compact header */}
           <div className="md:hidden">
             <div className="flex items-center gap-3 mb-3">
               <button
                 onClick={() => router.push('/')}
-                className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors touch-manipulation"
+                className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors touch-manipulation"
               >
-                <ArrowLeft size={20} className="text-gray-600" />
+                <ArrowLeft size={20} className="text-gray-600 dark:text-gray-400" />
               </button>
               <div className="flex-1 min-w-0">
-                <h1 className="text-base font-bold text-gray-900 truncate">
+                <h1 className={`text-base font-bold text-gray-900 dark:text-white truncate ${language === 'am' ? 'font-amharic' : ''}`}>
                   {meeting.title}
                 </h1>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[10px] text-gray-500">
-                    {new Date(meeting.dateRange.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(meeting.dateRange.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  <span className={`text-[10px] text-gray-500 dark:text-gray-400 ${language === 'am' ? 'font-amharic' : ''}`}>
+                    {new Date(meeting.dateRange.start).toLocaleDateString(language === 'am' ? 'am-ET' : 'en-US', { month: 'short', day: 'numeric' })} - {new Date(meeting.dateRange.end).toLocaleDateString(language === 'am' ? 'am-ET' : 'en-US', { month: 'short', day: 'numeric' })}
                   </span>
-                  <span className="text-[10px] text-gray-500">·</span>
-                  <span className="text-[10px] font-ethiopic text-ethiopian-green font-bold">{toGeezNumeral(meeting.availability.length)}</span>
-                  <span className="text-[10px] text-gray-500">responses</span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400">·</span>
+                  <span className="text-[10px] font-ethiopic text-gray-700 dark:text-gray-300 font-semibold">{toGeezNumeral(meeting.availability.length)}</span>
+                  <span className={`text-[10px] text-gray-500 dark:text-gray-400 ${language === 'am' ? 'font-amharic' : ''}`}>{language === 'am' ? 'ምላሾች' : 'responses'}</span>
                 </div>
               </div>
-              <button
-                onClick={copyLink}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-ethiopian-green/10 hover:bg-ethiopian-green/20 transition-colors touch-manipulation"
-              >
-                {copied ? <Check size={18} className="text-ethiopian-green" /> : <Share2 size={18} className="text-ethiopian-green" />}
-              </button>
+              <div className="flex items-center gap-2">
+                <LanguageToggle />
+                <ThemeToggle />
+                <button
+                  onClick={copyLink}
+                  className="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors touch-manipulation"
+                >
+                  {copied ? <Check size={18} className="text-gray-700 dark:text-gray-300" /> : <Share2 size={18} className="text-gray-700 dark:text-gray-300" />}
+                </button>
+              </div>
             </div>
           </div>
           
           {/* Desktop: Full header */}
           <div className="hidden md:block">
-            <button
-              onClick={() => router.push('/')}
-              className="flex items-center gap-2 text-gray-600 hover:text-ethiopian-green mb-6 font-semibold transition-colors group"
-            >
-              <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-              <span>Back to Home</span>
-            </button>
+            <div className="flex items-center justify-between mb-8">
+              <button
+                onClick={() => router.push('/')}
+                className={`flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 mb-0 text-sm transition-colors group ${language === 'am' ? 'font-amharic' : ''}`}
+              >
+                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                <span>{t.common.back}</span>
+              </button>
+              <div className="flex items-center gap-2">
+                <LanguageToggle />
+                <ThemeToggle />
+              </div>
+            </div>
             
-            <div className="flex flex-row items-start justify-between gap-6">
+            <div className="flex flex-row items-start justify-between gap-8">
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-3">
-                  <Sparkles className="text-ethiopian-green" size={32} />
-                  <h1 className="text-4xl font-bold text-gray-900 break-words">
-                    {meeting.title}
-                  </h1>
-                </div>
+                <h1 className={`text-3xl font-bold text-gray-900 dark:text-white mb-2 break-words ${language === 'am' ? 'font-amharic' : ''}`}>
+                  {meeting.title}
+                </h1>
                 {meeting.description && (
-                  <p className="text-gray-600 text-lg mb-4 ml-11">{meeting.description}</p>
+                  <p className={`text-gray-500 dark:text-gray-400 text-base mb-6 ${language === 'am' ? 'font-amharic' : ''}`}>{meeting.description}</p>
                 )}
-                <div className="flex items-center gap-6 text-sm text-gray-600 ml-11">
-                  <span className="flex items-center gap-2 bg-ethiopian-green/10 px-4 py-2 rounded-full">
-                    <Calendar size={18} className="text-ethiopian-green" />
-                    <span className="font-semibold">
+                <div className={`flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 ${language === 'am' ? 'font-amharic' : ''}`}>
+                  <span className="flex items-center gap-1.5">
+                    <Calendar size={16} className="text-gray-400 dark:text-gray-500" />
+                    <span>
                       {new Date(meeting.dateRange.start).toISOString().split('T')[0]} - {new Date(meeting.dateRange.end).toISOString().split('T')[0]}
                     </span>
                   </span>
-                  <span className="flex items-center gap-2 bg-ethiopian-yellow/20 px-4 py-2 rounded-full">
-                    <Users size={18} className="text-yellow-700" />
-                    <span className="font-ethiopic font-bold">{toGeezNumeral(meeting.availability.length)}</span>
-                    <span className="font-semibold">responses</span>
+                  <span className="text-gray-300 dark:text-gray-600">·</span>
+                  <span className="flex items-center gap-1.5">
+                    <Users size={16} className="text-gray-400 dark:text-gray-500" />
+                    <span className="font-ethiopic font-semibold text-gray-700 dark:text-gray-300">{toGeezNumeral(meeting.availability.length)}</span>
+                    <span>{language === 'am' ? 'ምላሾች' : 'responses'}</span>
                   </span>
                 </div>
               </div>
               
               <button
                 onClick={copyLink}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-ethiopian-green to-green-600 text-white rounded-xl hover:shadow-xl transition-all font-semibold"
+                className={`flex items-center gap-2 px-5 py-2.5 bg-gray-900 dark:bg-gray-700 hover:bg-gray-800 dark:hover:bg-gray-600 text-white rounded-lg transition-all text-sm font-medium flex-shrink-0 ${language === 'am' ? 'font-amharic' : ''}`}
               >
-                {copied ? <Check size={20} /> : <Share2 size={20} />}
-                {copied ? "Copied!" : "Share Link"}
+                {copied ? <Check size={18} /> : <Share2 size={18} />}
+                {copied ? t.common.copied : t.common.share}
               </button>
             </div>
           </div>
@@ -372,141 +384,84 @@ export default function MeetingPageClient({ meetingId }: Props) {
       <main className="max-w-7xl mx-auto px-4 py-4 sm:py-6 md:py-8">
         {/* Mobile: Sticky Bottom Input */}
         {!hasSubmitted && (
-          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-br from-white to-gray-50 border-t-4 border-ethiopian-green shadow-2xl z-40 p-4">
-            {/* Progress bar */}
-            <div className="mb-3">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-semibold text-gray-700">Progress</span>
-                <span className="text-xs font-bold text-ethiopian-green">
-                  <span className="font-ethiopic">{toGeezNumeral(selectedSlots.size)}</span> slots
-                </span>
-              </div>
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden shadow-inner">
-                <div 
-                  className="h-full bg-gradient-to-r from-ethiopian-green to-green-500 transition-all duration-500 ease-out rounded-full"
-                  style={{ 
-                    width: `${Math.min((selectedSlots.size / Math.max(timeSlots.length * dates.length, 1)) * 100, 100)}%` 
-                  }}
-                ></div>
-              </div>
-            </div>
-            
+          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-40 p-4">
             <div className="flex items-center gap-2 mb-2">
               <input
                 type="text"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
-                placeholder="Your name"
-                className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base touch-manipulation bg-white shadow-sm"
+                placeholder={language === 'am' ? 'ስምዎ' : 'Your name'}
+                className={`flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-ethiopian-green focus:border-ethiopian-green transition-all text-base touch-manipulation bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 ${language === 'am' ? 'font-amharic' : ''}`}
               />
               <button
                 onClick={handleSubmit}
                 disabled={selectedSlots.size === 0 || !userName.trim()}
-                className="px-5 py-3 bg-gradient-to-r from-ethiopian-green to-green-600 text-white rounded-xl font-bold text-base shadow-lg disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all touch-manipulation flex items-center justify-center min-w-[90px] active:scale-95"
+                className={`px-5 py-3 bg-ethiopian-green text-white rounded-lg font-semibold text-base disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-all touch-manipulation flex items-center justify-center min-w-[90px] active:scale-95 ${language === 'am' ? 'font-amharic' : ''}`}
               >
                 <Check size={18} />
-                <span className="ml-1">Submit</span>
+                <span className="ml-1">{t.common.submit}</span>
               </button>
             </div>
-            <div className="flex items-center gap-2 text-xs text-gray-600">
-              <div className="w-3 h-3 bg-blue-500 border-2 border-blue-600 rounded shadow-sm"></div>
-              <p>
-                Tap slots to select · <span className="font-ethiopic font-bold text-ethiopian-green">{toGeezNumeral(selectedSlots.size)}</span> selected
-              </p>
+            <div className={`flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 ${language === 'am' ? 'font-amharic' : ''}`}>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-ethiopian-green rounded"></div>
+                <span>{t.meeting.tapToSelect}</span>
+              </div>
+              <span className="font-ethiopic font-semibold text-gray-700 dark:text-gray-300">{toGeezNumeral(selectedSlots.size)} {t.meeting.selected}</span>
             </div>
           </div>
         )}
         
         {/* Desktop: User Input Section */}
         {!hasSubmitted && (
-          <div className="hidden md:block relative overflow-hidden bg-gradient-to-br from-white via-ethiopian-green/5 to-white rounded-3xl shadow-2xl p-10 mb-8 ethiopian-border animate-fadeIn">
-            {/* Decorative background elements */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-ethiopian-green/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-ethiopian-yellow/10 rounded-full blur-2xl -ml-24 -mb-24"></div>
-            
-            <div className="relative z-10">
-              {/* Header with icon */}
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-ethiopian-green to-green-600 flex items-center justify-center shadow-lg">
-                  <Calendar className="text-white" size={28} />
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold mb-1 text-gray-900">
-                    Mark Your Availability
-                  </h2>
-                  <p className="text-gray-600 text-lg">Select the times when you're free to meet</p>
-                </div>
-              </div>
+          <div className="hidden md:block bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-8 mb-8">
+            <div className="mb-6">
+              <h2 className={`text-2xl font-bold text-gray-900 dark:text-white mb-1 ${language === 'am' ? 'font-amharic' : ''}`}>
+                {t.meeting.markAvailability}
+              </h2>
+              <p className={`text-gray-600 dark:text-gray-400 ${language === 'am' ? 'font-amharic' : ''}`}>{t.meeting.markAvailabilityDesc}</p>
+            </div>
 
-              {/* Progress indicator */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-semibold text-gray-700">Selection Progress</span>
-                  <span className="text-sm font-bold text-ethiopian-green">
-                    <span className="font-ethiopic">{toGeezNumeral(selectedSlots.size)}</span> slots selected
-                  </span>
-                </div>
-                <div className="h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
-                  <div 
-                    className="h-full bg-gradient-to-r from-ethiopian-green via-green-500 to-ethiopian-green transition-all duration-500 ease-out rounded-full"
-                    style={{ 
-                      width: `${Math.min((selectedSlots.size / Math.max(timeSlots.length * dates.length, 1)) * 100, 100)}%` 
-                    }}
-                  ></div>
-                </div>
+            <div className="flex items-end gap-4 mb-6">
+              <div className="flex-1">
+                <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${language === 'am' ? 'font-amharic' : ''}`}>
+                  {t.meeting.yourName}
+                </label>
+                <input
+                  type="text"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder={language === 'am' ? 'ስምዎን ያስገቡ' : 'Enter your name'}
+                  className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-ethiopian-green focus:border-ethiopian-green transition-all text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 ${language === 'am' ? 'font-amharic' : ''}`}
+                />
               </div>
+              <button
+                onClick={handleSubmit}
+                disabled={selectedSlots.size === 0 || !userName.trim()}
+                className={`px-6 py-3 bg-ethiopian-green text-white rounded-lg font-semibold text-base hover:bg-ethiopian-dark-green disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-all flex items-center gap-2 ${language === 'am' ? 'font-amharic' : ''}`}
+              >
+                <Check size={20} />
+                {t.common.submit}
+              </button>
+            </div>
 
-              {/* Input Section */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-gray-100 shadow-lg mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex-1">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Your Name
-                    </label>
-                    <input
-                      type="text"
-                      value={userName}
-                      onChange={(e) => setUserName(e.target.value)}
-                      placeholder="Enter your name"
-                      className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-lg font-medium bg-white"
-                    />
-                  </div>
-                  <div className="pt-7">
-                    <button
-                      onClick={handleSubmit}
-                      disabled={selectedSlots.size === 0 || !userName.trim()}
-                      className="px-10 py-4 bg-gradient-to-r from-ethiopian-green via-green-600 to-ethiopian-green text-white rounded-xl font-bold text-lg hover:shadow-2xl hover:scale-105 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all flex items-center gap-3 min-w-[160px] justify-center"
-                    >
-                      <Check size={24} />
-                      Submit Availability
-                    </button>
-                  </div>
+            {/* Instructions */}
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+              <p className={`text-sm text-gray-600 dark:text-gray-300 mb-3 ${language === 'am' ? 'font-amharic' : ''}`}>
+                {t.meeting.instructionsText} <span className="font-semibold text-gray-900 dark:text-white">{meetingDuration === 1 ? (language === 'am' ? '1 ሰዓት' : '1-hour') : meetingDuration === 0.5 ? (language === 'am' ? '30 ደቂቃ' : '30-minute') : `${meetingDuration} ${language === 'am' ? 'ሰዓት' : 'hour'}`}</span> {language === 'am' ? 'የስብሰባ ክፍል' : 'meeting block'}.
+              </p>
+              <div className={`flex items-center gap-6 text-xs text-gray-500 dark:text-gray-400 ${language === 'am' ? 'font-amharic' : ''}`}>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-ethiopian-green rounded"></div>
+                  <span>{t.meeting.yourSelection}</span>
                 </div>
-              </div>
-
-              {/* Instructions */}
-              <div className="flex items-start gap-4 p-5 bg-gradient-to-r from-blue-50 to-ethiopian-green/10 rounded-xl border-2 border-blue-100">
-                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">💡</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-green-500 rounded"></div>
+                  <span>{t.meeting.mostAvailable}</span>
                 </div>
-                <div className="flex-1">
-                  <p className="text-gray-700 font-medium mb-2">
-                    <span className="font-semibold text-gray-900">How to select:</span> Click on time slots in the calendar below to mark your availability. Each selection represents a <span className="font-bold text-ethiopian-green">{meetingDuration === 1 ? '1-hour' : meetingDuration === 0.5 ? '30-minute' : `${meetingDuration}-hour`}</span> meeting block.
-                  </p>
-                  <div className="flex items-center gap-4 mt-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 bg-blue-500 border-2 border-blue-600 rounded shadow-sm"></div>
-                      <span className="text-gray-600">Your selection</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 bg-ethiopian-green border-2 border-ethiopian-green rounded shadow-sm"></div>
-                      <span className="text-gray-600">Most available</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 bg-gray-200 border-2 border-gray-300 rounded shadow-sm"></div>
-                      <span className="text-gray-600">No responses</span>
-                    </div>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-gray-200 dark:bg-gray-600 rounded"></div>
+                  <span>{t.meeting.noResponses}</span>
                 </div>
               </div>
             </div>
@@ -514,16 +469,16 @@ export default function MeetingPageClient({ meetingId }: Props) {
         )}
 
         {hasSubmitted && (
-          <div className="bg-gradient-to-r from-ethiopian-green/10 to-green-50 border-2 border-ethiopian-green rounded-2xl p-8 mb-8 animate-fadeIn">
-            <div className="flex items-center gap-4">
-              <div className="bg-ethiopian-green rounded-full p-3">
-                <Check className="text-white" size={32} />
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 mb-8">
+            <div className="flex items-center gap-3">
+              <div className="bg-ethiopian-green rounded-full p-2">
+                <Check className="text-white" size={20} />
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-2xl text-gray-900 mb-1">
-                  Success!
+                <h3 className={`font-semibold text-lg text-gray-900 dark:text-white mb-1 ${language === 'am' ? 'font-amharic' : ''}`}>
+                  {t.meeting.successMessage}
                 </h3>
-                <p className="text-gray-700 text-lg">Your availability has been saved. Share this link with others to collect their availability.</p>
+                <p className={`text-gray-600 dark:text-gray-300 text-sm ${language === 'am' ? 'font-amharic' : ''}`}>{t.meeting.successDescription}</p>
               </div>
             </div>
           </div>
@@ -531,26 +486,26 @@ export default function MeetingPageClient({ meetingId }: Props) {
 
         {/* Calendar Grid */}
         {dates.length > 0 && timeSlots.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8 overflow-x-auto ethiopian-border -mx-4 sm:mx-0">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4 sm:p-6 md:p-8 overflow-x-auto -mx-4 sm:mx-0">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold mb-1 text-gray-900">
-                Availability Grid
+              <h2 className={`text-xl sm:text-2xl font-bold mb-1 text-gray-900 dark:text-white ${language === 'am' ? 'font-amharic' : ''}`}>
+                {t.meeting.availabilityGrid}
               </h2>
-              <p className="text-gray-600 text-sm sm:text-base">Heat map showing team availability</p>
+              <p className={`text-gray-500 dark:text-gray-400 text-sm ${language === 'am' ? 'font-amharic' : ''}`}>{t.meeting.availabilityGridDesc}</p>
             </div>
-            <div className="flex flex-wrap items-center gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm w-full sm:w-auto">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-ethiopian-green border-2 border-ethiopian-green rounded-lg shadow-md flex-shrink-0"></div>
-                <span className="font-semibold whitespace-nowrap">Most available</span>
+            <div className={`flex flex-wrap items-center gap-4 text-xs sm:text-sm ${language === 'am' ? 'font-amharic' : ''}`}>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-green-500 rounded"></div>
+                <span className="text-gray-600 dark:text-gray-400">{t.meeting.mostAvailable}</span>
               </div>
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-ethiopian-yellow border-2 border-yellow-500 rounded-lg shadow-md flex-shrink-0"></div>
-                <span className="font-semibold whitespace-nowrap">Somewhat available</span>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-yellow-400 rounded"></div>
+                <span className="text-gray-600 dark:text-gray-400">{t.meeting.somewhatAvailable}</span>
               </div>
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-100 border-2 border-gray-200 rounded-lg flex-shrink-0"></div>
-                <span className="font-semibold whitespace-nowrap">No responses</span>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-gray-200 dark:bg-gray-600 rounded"></div>
+                <span className="text-gray-600 dark:text-gray-400">{t.meeting.noResponses}</span>
               </div>
             </div>
           </div>
@@ -568,17 +523,17 @@ export default function MeetingPageClient({ meetingId }: Props) {
                 const ethDate = gregorianToEthiopian(date);
                 const dayOfWeek = date.getDay();
                 return (
-                  <div key={idx} className="text-center p-2 sm:p-3 bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-lg sm:rounded-xl shadow-sm">
-                    <div className="font-ethiopic text-xs sm:text-sm text-ethiopian-green font-bold mb-0.5 sm:mb-1">
+                  <div key={idx} className="text-center p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
+                    <div className="font-ethiopic text-xs sm:text-sm text-ethiopian-green font-semibold mb-1">
                       {ETHIOPIAN_DAYS[dayOfWeek]}
                     </div>
-                    <div className="text-sm sm:text-base font-bold text-gray-800">
+                    <div className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">
                       {date.getMonth() + 1}/{date.getDate()}
                     </div>
-                    <div className="font-ethiopic text-[10px] sm:text-xs text-gray-600 mt-0.5 sm:mt-1 hidden sm:block">
+                    <div className="font-ethiopic text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1 hidden sm:block">
                       {formatEthiopianDate(ethDate, false)}
                     </div>
-                    <div className="font-ethiopic text-[10px] sm:text-xs text-ethiopian-green font-semibold">
+                    <div className="font-ethiopic text-[10px] sm:text-xs text-ethiopian-green font-medium mt-0.5">
                       {toGeezNumeral(ethDate.day)}
                     </div>
                   </div>
@@ -595,10 +550,10 @@ export default function MeetingPageClient({ meetingId }: Props) {
                 
                 return (
                   <React.Fragment key={`group-${slotInfo.startHour}`}>
-                    <div key={`time-${slotInfo.startHour}`} className="sticky left-0 bg-gradient-to-r from-white to-gray-50 z-10 p-2 sm:p-3 text-right font-bold text-gray-800 border-r-2 sm:border-r-4 border-ethiopian-green/20 rounded-l-md sm:rounded-l-lg">
-                      <span className="text-sm sm:text-base md:text-lg">{timeDisplay}</span>
+                    <div key={`time-${slotInfo.startHour}`} className="sticky left-0 bg-gray-50 dark:bg-gray-700 z-10 p-2 sm:p-3 text-right font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600 rounded-l-lg">
+                      <span className="text-sm sm:text-base">{timeDisplay}</span>
                       {durationHours > 1 && (
-                        <div className="text-[10px] sm:text-xs text-gray-500 mt-1">
+                        <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1">
                           ({durationHours}h)
                         </div>
                       )}
@@ -610,7 +565,7 @@ export default function MeetingPageClient({ meetingId }: Props) {
                       return (
                         <div
                           key={`${date}-${slotInfo.startHour}`}
-                          className={`relative border-2 cursor-pointer select-none slot-cell rounded-md sm:rounded-lg ${getSlotColor(date, slotInfo.startHour, durationHours)} ${!hasSubmitted ? 'active:scale-95 sm:hover:scale-105' : ''} touch-manipulation`}
+                          className={`relative border cursor-pointer select-none rounded ${getSlotColor(date, slotInfo.startHour, durationHours)} ${!hasSubmitted ? 'hover:opacity-90 active:opacity-75' : ''} transition-opacity touch-manipulation`}
                           style={{ 
                             height: `${50 * durationHours}px`, 
                             minHeight: `${50 * durationHours}px` 
@@ -624,14 +579,14 @@ export default function MeetingPageClient({ meetingId }: Props) {
                         >
                           {count > 0 && (
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="font-ethiopic font-bold text-white drop-shadow-lg text-base sm:text-lg md:text-xl">
+                              <span className="font-ethiopic font-semibold text-white text-sm sm:text-base">
                                 {toGeezNumeral(count)}
                               </span>
                             </div>
                           )}
                           {isSelected && !hasSubmitted && (
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <Check className="text-white drop-shadow-lg" size={18} style={{ width: '18px', height: '18px' }} />
+                              <Check className="text-white" size={16} />
                             </div>
                           )}
                         </div>
@@ -647,25 +602,25 @@ export default function MeetingPageClient({ meetingId }: Props) {
 
         {/* Participants List */}
         {meeting.availability.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8 mt-6 sm:mt-8 ethiopian-border">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 flex flex-wrap items-center gap-2 sm:gap-3 text-gray-900">
-              <Users size={24} className="sm:w-8 sm:h-8 text-ethiopian-green" />
-              <span>Participants</span>
-              <span className="text-lg sm:text-xl font-ethiopic bg-ethiopian-green text-white px-3 sm:px-4 py-1 rounded-full">
-                ({toGeezNumeral(meeting.availability.length)})
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4 sm:p-6 md:p-8 mt-6 sm:mt-8">
+            <h2 className={`text-xl sm:text-2xl font-bold mb-4 sm:mb-6 flex flex-wrap items-center gap-2 sm:gap-3 text-gray-900 dark:text-white ${language === 'am' ? 'font-amharic' : ''}`}>
+              <Users size={20} className="text-gray-600 dark:text-gray-400" />
+              <span>{t.meeting.participants}</span>
+              <span className="text-sm sm:text-base font-ethiopic bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 sm:px-3 py-1 rounded-full">
+                {toGeezNumeral(meeting.availability.length)}
               </span>
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
               {meeting.availability.map((entry: any, idx: number) => (
-                <div key={idx} className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 bg-gradient-to-br from-gray-50 to-white rounded-xl border-2 border-gray-200 card-hover shadow-md">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-ethiopian-green to-green-600 text-white flex items-center justify-center font-bold text-lg sm:text-xl shadow-lg flex-shrink-0">
+                <div key={idx} className="flex items-center gap-3 sm:gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-ethiopian-green text-white flex items-center justify-center font-semibold text-base sm:text-lg flex-shrink-0">
                     {entry.userName.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold text-base sm:text-lg text-gray-900 truncate">{entry.userName}</div>
-                    <div className="text-xs sm:text-sm text-gray-600 flex items-center gap-1">
-                      <span className="font-ethiopic text-ethiopian-green font-semibold">{toGeezNumeral(entry.slots.length)}</span>
-                      <span>slots selected</span>
+                    <div className={`font-semibold text-sm sm:text-base text-gray-900 dark:text-white truncate ${language === 'am' ? 'font-amharic' : ''}`}>{entry.userName}</div>
+                    <div className={`text-xs sm:text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 ${language === 'am' ? 'font-amharic' : ''}`}>
+                      <span className="font-ethiopic text-gray-700 dark:text-gray-300">{toGeezNumeral(entry.slots.length)}</span>
+                      <span>{language === 'am' ? 'ክፍቶች' : 'slots'}</span>
                     </div>
                   </div>
                 </div>

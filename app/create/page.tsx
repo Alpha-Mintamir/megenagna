@@ -5,9 +5,13 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Calendar, Clock, Sparkles, Info } from "lucide-react";
 import { getEthiopianToday, addDaysToEthiopianDate } from "@/lib/ethiopian-calendar";
 import EthiopianDatePicker from "@/components/EthiopianDatePicker";
+import ThemeToggle from "@/components/ThemeToggle";
+import LanguageToggle from "@/components/LanguageToggle";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function CreateMeeting() {
   const router = useRouter();
+  const { t, language } = useLanguage();
   
   const today = new Date();
   const nextWeek = new Date(today);
@@ -27,7 +31,7 @@ export default function CreateMeeting() {
     e.preventDefault();
     
     if (!title.trim() || !creatorName.trim()) {
-      alert("Please fill in all required fields");
+      alert(language === 'am' ? 'እባክዎ ሁሉንም የሚጠይቁ መስኮች ይሙሉ' : 'Please fill in all required fields');
       return;
     }
 
@@ -65,9 +69,8 @@ export default function CreateMeeting() {
         throw new Error('Invalid response from server');
       }
       
-      // Small delay to ensure database write is complete
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+      // No delay needed - MongoDB write is synchronous from API perspective
+      // The database write completes before the response is sent
       router.push(`/meeting/${data.meeting.id}`);
     } catch (error: any) {
       console.error('Error creating meeting:', error);
@@ -76,41 +79,49 @@ export default function CreateMeeting() {
   };
 
   return (
-    <div className="min-h-screen ethiopian-pattern pb-24 md:pb-0">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-24 md:pb-0">
       {/* Mobile-Optimized Header */}
-      <header className="ethiopian-border bg-white shadow-xl sticky top-0 z-40 md:relative">
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 md:relative">
         <div className="max-w-4xl mx-auto px-4 py-3 md:py-8">
           {/* Mobile: Compact header */}
           <div className="md:hidden flex items-center gap-3 mb-4">
             <button
               onClick={() => router.push('/')}
-              className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors touch-manipulation"
+              className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors touch-manipulation"
             >
-              <ArrowLeft size={20} className="text-gray-600" />
+              <ArrowLeft size={20} className="text-gray-600 dark:text-gray-400" />
             </button>
             <div className="flex-1">
-              <h1 className="text-lg font-bold text-ethiopian-green">
-                Create Meeting
+              <h1 className={`text-lg font-semibold text-gray-900 dark:text-white ${language === 'am' ? 'font-amharic' : ''}`}>
+                {t.create.title}
               </h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <LanguageToggle />
+              <ThemeToggle />
             </div>
           </div>
           
           {/* Desktop: Full header */}
           <div className="hidden md:block">
-            <button
-              onClick={() => router.push('/')}
-              className="flex items-center gap-2 text-gray-600 hover:text-ethiopian-green mb-6 font-semibold transition-colors group"
-            >
-              <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-              <span>Back to Home</span>
-            </button>
+            <div className="flex items-center justify-between mb-8">
+              <button
+                onClick={() => router.push('/')}
+                className={`flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-sm transition-colors group ${language === 'am' ? 'font-amharic' : ''}`}
+              >
+                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                <span>{t.common.back}</span>
+              </button>
+              <div className="flex items-center gap-2">
+                <LanguageToggle />
+                <ThemeToggle />
+              </div>
+            </div>
             <div>
-              <h1 className="text-4xl font-bold text-ethiopian-green mb-1 flex items-center gap-3">
-                <span className="font-ethiopic">መገናኛ</span>
-                <span>·</span>
-                <span>Create Meeting</span>
+              <h1 className={`text-3xl font-bold text-gray-900 dark:text-white mb-2 ${language === 'am' ? 'font-amharic' : ''}`}>
+                {t.create.title}
               </h1>
-              <p className="text-xl text-gray-700">Set up a meeting and share with your team</p>
+              <p className={`text-gray-600 dark:text-gray-400 ${language === 'am' ? 'font-amharic' : ''}`}>{t.create.subtitle}</p>
             </div>
           </div>
         </div>
@@ -118,106 +129,103 @@ export default function CreateMeeting() {
 
       {/* Form */}
       <main className="max-w-4xl mx-auto px-4 py-4 md:py-8">
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl md:rounded-2xl shadow-2xl p-4 md:p-10 ethiopian-border md:ethiopian-border">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 md:p-8 space-y-6">
           {/* Meeting Title */}
-          <div className="mb-5 md:mb-8">
-            <label className="block text-base md:text-lg font-bold text-gray-900 mb-2 md:mb-3 flex items-center gap-2">
-              <span>Meeting Title</span>
-              <span className="text-ethiopian-red">*</span>
+          <div>
+            <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${language === 'am' ? 'font-amharic' : ''}`}>
+              {t.create.meetingTitle} <span className="text-red-500">{t.common.required}</span>
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Team Weekly Standup"
-              className="w-full px-4 md:px-6 py-4 md:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base md:text-lg touch-manipulation"
+              placeholder={language === 'am' ? 'ለምሳሌ፣ የቡድን ሳምንታዊ ስብሰባ' : 'e.g., Team Weekly Standup'}
+              className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-ethiopian-green focus:border-ethiopian-green transition-all text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 ${language === 'am' ? 'font-amharic' : ''}`}
               required
             />
           </div>
 
           {/* Your Name */}
-          <div className="mb-5 md:mb-8">
-            <label className="block text-base md:text-lg font-bold text-gray-900 mb-2 md:mb-3 flex items-center gap-2">
-              <span>Your Name</span>
-              <span className="text-ethiopian-red">*</span>
+          <div>
+            <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${language === 'am' ? 'font-amharic' : ''}`}>
+              {t.create.yourName} <span className="text-red-500">{t.common.required}</span>
             </label>
             <input
               type="text"
               value={creatorName}
               onChange={(e) => setCreatorName(e.target.value)}
-              placeholder="Enter your name"
-              className="w-full px-4 md:px-6 py-4 md:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base md:text-lg touch-manipulation"
+              placeholder={language === 'am' ? 'ስምዎን ያስገቡ' : 'Enter your name'}
+              className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-ethiopian-green focus:border-ethiopian-green transition-all text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 ${language === 'am' ? 'font-amharic' : ''}`}
               required
             />
           </div>
 
           {/* Description */}
-          <div className="mb-6 sm:mb-8">
-            <label className="block text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
-              <span>Description</span>
-              <span className="text-xs sm:text-sm text-gray-500 font-normal">(Optional)</span>
+          <div>
+            <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${language === 'am' ? 'font-amharic' : ''}`}>
+              {t.create.description} <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">{t.common.optional}</span>
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Add any additional details about the meeting..."
+              placeholder={language === 'am' ? 'ስብሰባው ላይ ተጨማሪ ዝርዝሮችን ያክሉ...' : 'Add any additional details about the meeting...'}
               rows={4}
-              className="w-full px-4 sm:px-6 py-3 sm:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base sm:text-lg resize-none"
+              className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-ethiopian-green focus:border-ethiopian-green transition-all text-base resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 ${language === 'am' ? 'font-amharic' : ''}`}
             />
           </div>
 
           {/* Date Range */}
-          <div className="mb-6 sm:mb-8">
+          <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-              <label className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
-                <Calendar size={20} className="sm:w-6 sm:h-6 text-ethiopian-green" />
-                <span>Date Range</span>
+              <label className={`text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2 ${language === 'am' ? 'font-amharic' : ''}`}>
+                <Calendar size={16} className="text-gray-500 dark:text-gray-400" />
+                <span>{t.create.dateRange}</span>
               </label>
               
               {/* Calendar System Selector */}
-              <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg self-start sm:self-auto">
+              <div className="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
                 <button
                   type="button"
                   onClick={() => setCalendarType('ethiopian')}
-                  className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${language === 'am' ? 'font-amharic' : ''} ${
                     calendarType === 'ethiopian' 
-                      ? 'bg-white text-ethiopian-green shadow-sm border border-gray-200' 
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                   }`}
                 >
-                  Ethiopian
+                  {t.create.ethiopian}
                 </button>
                 <button
                   type="button"
                   onClick={() => setCalendarType('gregorian')}
-                  className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${language === 'am' ? 'font-amharic' : ''} ${
                     calendarType === 'gregorian' 
-                      ? 'bg-white text-ethiopian-green shadow-sm border border-gray-200' 
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                   }`}
                 >
-                  Gregorian
+                  {t.create.gregorian}
                 </button>
                 <button
                   type="button"
                   onClick={() => setCalendarType('both')}
-                  className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${language === 'am' ? 'font-amharic' : ''} ${
                     calendarType === 'both' 
-                      ? 'bg-white text-ethiopian-green shadow-sm border border-gray-200' 
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                   }`}
                 >
-                  Both
+                  {t.create.both}
                 </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 {(calendarType === 'ethiopian' || calendarType === 'both') && (
-                  <div className="mb-3">
+                  <div className={calendarType === 'both' ? "mb-3" : ""}>
                     <EthiopianDatePicker
-                      label={calendarType === 'both' ? "Start Date (Ethiopian)" : "Start Date"}
+                      label={calendarType === 'both' ? t.create.startDateEth : t.create.startDate}
                       value={startDate}
                       onChange={(date) => setStartDate(date)}
                     />
@@ -225,14 +233,14 @@ export default function CreateMeeting() {
                 )}
                 {(calendarType === 'gregorian' || calendarType === 'both') && (
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      {calendarType === 'both' ? "Start Date (Gregorian)" : "Start Date"}
+                    <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${language === 'am' ? 'font-amharic' : ''}`}>
+                      {calendarType === 'both' ? t.create.startDateGreg : t.create.startDate}
                     </label>
                     <input
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full px-4 sm:px-6 py-3 sm:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base sm:text-lg bg-white"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-ethiopian-green focus:border-ethiopian-green transition-all text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       required={calendarType === 'gregorian'}
                     />
                   </div>
@@ -240,9 +248,9 @@ export default function CreateMeeting() {
               </div>
               <div>
                 {(calendarType === 'ethiopian' || calendarType === 'both') && (
-                  <div className="mb-3">
+                  <div className={calendarType === 'both' ? "mb-3" : ""}>
                     <EthiopianDatePicker
-                      label={calendarType === 'both' ? "End Date (Ethiopian)" : "End Date"}
+                      label={calendarType === 'both' ? t.create.endDateEth : t.create.endDate}
                       value={endDate}
                       onChange={(date) => setEndDate(date)}
                       minDate={startDate}
@@ -251,15 +259,15 @@ export default function CreateMeeting() {
                 )}
                 {(calendarType === 'gregorian' || calendarType === 'both') && (
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      {calendarType === 'both' ? "End Date (Gregorian)" : "End Date"}
+                    <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${language === 'am' ? 'font-amharic' : ''}`}>
+                      {calendarType === 'both' ? t.create.endDateGreg : t.create.endDate}
                     </label>
                     <input
                       type="date"
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
                       min={startDate}
-                      className="w-full px-4 sm:px-6 py-3 sm:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base sm:text-lg bg-white"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-ethiopian-green focus:border-ethiopian-green transition-all text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       required={calendarType === 'gregorian'}
                     />
                   </div>
@@ -269,18 +277,18 @@ export default function CreateMeeting() {
           </div>
 
           {/* Time Range */}
-          <div className="mb-6 sm:mb-8">
-            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-              <Clock size={16} className="sm:w-[18px] sm:h-[18px]" />
-              Time Range (for each day)
+          <div>
+            <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2 ${language === 'am' ? 'font-amharic' : ''}`}>
+              <Clock size={16} className="text-gray-500 dark:text-gray-400" />
+              <span>{t.create.timeRange}</span>
             </label>
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-gray-600 mb-1">Start Time</label>
+                <label className={`block text-xs text-gray-500 dark:text-gray-400 mb-1.5 ${language === 'am' ? 'font-amharic' : ''}`}>{t.create.startTime}</label>
                 <select
                   value={startHour}
                   onChange={(e) => setStartHour(Number(e.target.value))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-green focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-ethiopian-green focus:border-ethiopian-green transition-all text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   {Array.from({ length: 24 }, (_, i) => (
                     <option key={i} value={i}>
@@ -290,11 +298,11 @@ export default function CreateMeeting() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-gray-600 mb-1">End Time</label>
+                <label className={`block text-xs text-gray-500 dark:text-gray-400 mb-1.5 ${language === 'am' ? 'font-amharic' : ''}`}>{t.create.endTime}</label>
                 <select
                   value={endHour}
                   onChange={(e) => setEndHour(Number(e.target.value))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-green focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-ethiopian-green focus:border-ethiopian-green transition-all text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   {Array.from({ length: 24 }, (_, i) => i + 1).map((i) => (
                     <option key={i} value={i}>
@@ -307,56 +315,55 @@ export default function CreateMeeting() {
           </div>
 
           {/* Meeting Duration */}
-          <div className="mb-6 sm:mb-8">
-            <label className="block text-base sm:text-lg font-bold text-gray-900 mb-2 md:mb-3 flex items-center gap-2">
-              <span>Meeting Duration</span>
-              <span className="text-xs sm:text-sm text-gray-500 font-normal">(How long each meeting slot will be)</span>
+          <div>
+            <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${language === 'am' ? 'font-amharic' : ''}`}>
+              {t.create.meetingDuration}
             </label>
             <select
               value={duration}
               onChange={(e) => setDuration(Number(e.target.value))}
-              className="w-full px-4 md:px-6 py-4 md:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base md:text-lg"
+              className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-ethiopian-green focus:border-ethiopian-green transition-all text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${language === 'am' ? 'font-amharic' : ''}`}
             >
-              <option value={0.5}>30 minutes</option>
-              <option value={1}>1 hour</option>
-              <option value={1.5}>1.5 hours</option>
-              <option value={2}>2 hours</option>
-              <option value={2.5}>2.5 hours</option>
-              <option value={3}>3 hours</option>
-              <option value={4}>4 hours</option>
+              <option value={0.5}>{t.duration.minutes30}</option>
+              <option value={1}>{t.duration.hour1}</option>
+              <option value={1.5}>{t.duration.hours1_5}</option>
+              <option value={2}>{t.duration.hours2}</option>
+              <option value={2.5}>{t.duration.hours2_5}</option>
+              <option value={3}>{t.duration.hours3}</option>
+              <option value={4}>{t.duration.hours4}</option>
             </select>
-            <p className="text-xs sm:text-sm text-gray-600 mt-2">
-              When participants select a time slot, it will block {duration === 1 ? '1 hour' : duration === 0.5 ? '30 minutes' : `${duration} hours`} of their calendar.
+            <p className={`text-xs text-gray-500 dark:text-gray-400 mt-2 ${language === 'am' ? 'font-amharic' : ''}`}>
+              {t.create.meetingDurationDesc} {duration === 1 ? t.duration.hour1 : duration === 0.5 ? t.duration.minutes30 : `${duration} ${language === 'am' ? 'ሰዓታት' : 'hours'}`}.
             </p>
           </div>
 
           {/* Mobile: Sticky Bottom Button */}
-          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 p-4 shadow-2xl z-40">
+          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 shadow-lg z-40">
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-ethiopian-green to-green-600 hover:from-ethiopian-green/90 hover:to-green-600/90 text-white px-6 py-4 rounded-xl font-bold text-lg shadow-lg transition-all touch-manipulation flex items-center justify-center gap-2"
+              className={`w-full bg-ethiopian-green hover:bg-ethiopian-dark-green text-white px-6 py-3 rounded-lg font-semibold transition-all touch-manipulation flex items-center justify-center gap-2 ${language === 'am' ? 'font-amharic' : ''}`}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Create Meeting
+              {t.common.create} {language === 'am' ? 'ስብሰባ' : 'Meeting'}
             </button>
           </div>
           
           {/* Desktop: Submit Button */}
-          <div className="hidden md:flex items-center justify-between pt-6 border-t border-gray-200">
+          <div className="hidden md:flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={() => router.push('/')}
-              className="px-6 py-3 text-gray-600 hover:text-gray-900 text-lg"
+              className={`px-5 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 text-sm transition-colors ${language === 'am' ? 'font-amharic' : ''}`}
             >
-              Cancel
+              {t.common.cancel}
             </button>
             <button
               type="submit"
-              className="bg-ethiopian-green hover:bg-ethiopian-green/90 text-white px-8 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all text-lg"
+              className={`bg-ethiopian-green hover:bg-ethiopian-dark-green text-white px-6 py-2.5 rounded-lg font-semibold transition-colors ${language === 'am' ? 'font-amharic' : ''}`}
             >
-              Create Meeting
+              {t.common.create} {language === 'am' ? 'ስብሰባ' : 'Meeting'}
             </button>
           </div>
         </form>

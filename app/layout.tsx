@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import MobileBlock from '@/components/MobileBlock'
+import { ThemeProvider } from '@/components/ThemeProvider'
+import { LanguageProvider } from '@/components/LanguageProvider'
 
 export const metadata: Metadata = {
   title: 'Megenagna - መገናኛ | Ethiopian Calendar Scheduler',
@@ -14,10 +16,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body>
-        <MobileBlock />
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
+        <ThemeProvider>
+          <LanguageProvider>
+            <MobileBlock />
+            {children}
+          </LanguageProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

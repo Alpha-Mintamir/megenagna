@@ -11,6 +11,7 @@ import {
   EthiopianDate,
   getDaysInEthiopianMonth
 } from '@/lib/ethiopian-calendar';
+import { useLanguage } from './LanguageProvider';
 
 interface EthiopianDatePickerProps {
   value: string; // Gregorian date string (YYYY-MM-DD)
@@ -20,6 +21,7 @@ interface EthiopianDatePickerProps {
 }
 
 export default function EthiopianDatePicker({ value, onChange, label, minDate }: EthiopianDatePickerProps) {
+  const { language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -129,47 +131,46 @@ export default function EthiopianDatePicker({ value, onChange, label, minDate }:
   return (
     <div className="relative" ref={containerRef}>
       {label && (
-        <label className="block text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
-          <Calendar size={20} className="sm:w-6 sm:h-6 text-ethiopian-green" />
-          <span>{label}</span>
+        <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${language === 'am' ? 'font-amharic' : ''}`}>
+          {label}
         </label>
       )}
       
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 md:px-6 py-4 md:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base md:text-lg cursor-pointer bg-white flex items-center justify-between group hover:border-ethiopian-green/50"
+        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-ethiopian-green focus:border-ethiopian-green transition-all text-base cursor-pointer bg-white dark:bg-gray-700 flex items-center justify-between group hover:border-gray-400 dark:hover:border-gray-500"
       >
-        <span className="font-ethiopic font-bold text-gray-800">
+        <span className="font-ethiopic font-medium text-gray-900 dark:text-white">
           {toGeezNumeral(currentEthDate.day)} {ETHIOPIAN_MONTHS[currentEthDate.month - 1]} {toGeezNumeral(currentEthDate.year)}
         </span>
-        <Calendar className="text-gray-400 group-hover:text-ethiopian-green transition-colors" size={20} />
+        <Calendar className="text-gray-400 dark:text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" size={18} />
       </div>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-full sm:w-80 bg-white rounded-xl shadow-2xl border-2 border-ethiopian-green z-50 animate-fadeIn overflow-hidden">
+        <div className="absolute top-full left-0 mt-2 w-full sm:w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-ethiopian-green to-green-600 p-4 flex items-center justify-between text-white">
+          <div className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 p-3 flex items-center justify-between">
             <button 
               onClick={(e) => { e.stopPropagation(); handlePrevMonth(); }}
-              className="p-1 hover:bg-white/20 rounded-full transition-colors"
+              className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
             >
-              <ChevronLeft size={24} />
+              <ChevronLeft size={20} className="text-gray-600 dark:text-gray-300" />
             </button>
-            <div className="font-bold text-lg font-ethiopic">
+            <div className="font-semibold text-base font-ethiopic text-gray-900 dark:text-white">
               {ETHIOPIAN_MONTHS[viewDate.month - 1]} {toGeezNumeral(viewDate.year)}
             </div>
             <button 
               onClick={(e) => { e.stopPropagation(); handleNextMonth(); }}
-              className="p-1 hover:bg-white/20 rounded-full transition-colors"
+              className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
             >
-              <ChevronRight size={24} />
+              <ChevronRight size={20} className="text-gray-600 dark:text-gray-300" />
             </button>
           </div>
 
           {/* Weekdays */}
-          <div className="grid grid-cols-7 p-2 bg-gray-50 border-b border-gray-100">
+          <div className="grid grid-cols-7 p-2 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
             {ETHIOPIAN_DAYS.map((day, i) => (
-              <div key={i} className="text-center text-xs font-bold text-gray-500 font-ethiopic truncate">
+              <div key={i} className="text-center text-xs font-medium text-gray-500 dark:text-gray-400 font-ethiopic">
                 {day}
               </div>
             ))}
@@ -179,7 +180,7 @@ export default function EthiopianDatePicker({ value, onChange, label, minDate }:
           <div className="grid grid-cols-7 p-2 gap-1">
             {/* Empty slots for start of month */}
             {Array.from({ length: ethStartDay }).map((_, i) => (
-              <div key={`empty-${i}`} className="h-10"></div>
+              <div key={`empty-${i}`} className="h-9"></div>
             ))}
 
             {/* Actual days */}
@@ -196,12 +197,12 @@ export default function EthiopianDatePicker({ value, onChange, label, minDate }:
                   onClick={(e) => { e.stopPropagation(); !disabled && handleDayClick(day); }}
                   disabled={disabled}
                   className={`
-                    h-10 rounded-lg flex items-center justify-center font-ethiopic font-bold text-sm transition-all
+                    h-9 rounded-md flex items-center justify-center font-ethiopic font-medium text-sm transition-all
                     ${isSelected 
-                      ? 'bg-ethiopian-green text-white shadow-md scale-105' 
+                      ? 'bg-ethiopian-green text-white' 
                       : disabled
-                        ? 'text-gray-300 cursor-not-allowed'
-                        : 'text-gray-700 hover:bg-ethiopian-green/10 hover:text-ethiopian-green'
+                        ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                     }
                   `}
                 >

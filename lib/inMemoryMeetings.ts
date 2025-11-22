@@ -82,6 +82,7 @@ export async function upsertAvailabilityInMemory(
   if (existingEntryIndex >= 0) {
     meeting.availability[existingEntryIndex] = {
       ...meeting.availability[existingEntryIndex],
+      userName: userName,
       slots: uniqueSlots,
     };
   } else {

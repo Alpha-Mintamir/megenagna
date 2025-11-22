@@ -10,12 +10,14 @@ if (!uri) {
 // MongoDB Atlas uses SRV connection strings and requires TLS
 // These options ensure compatibility with both MongoDB Atlas and other MongoDB providers
 const options: MongoClientOptions = {
-  retryWrites: true, // Enable retryable writes for better reliability
-  // MongoDB Atlas connection strings already include TLS settings
-  // Don't override TLS settings unless explicitly needed
-  serverSelectionTimeoutMS: 10000, // 10 seconds timeout for server selection
-  socketTimeoutMS: 45000, // 45 seconds socket timeout
-  connectTimeoutMS: 10000, // 10 seconds connection timeout
+  retryWrites: true,
+  // Optimized timeouts for faster connection
+  serverSelectionTimeoutMS: 5000, // Reduced from 10s to 5s
+  socketTimeoutMS: 30000, // Reduced from 45s to 30s
+  connectTimeoutMS: 5000, // Reduced from 10s to 5s
+  // Enable connection pooling for better performance
+  maxPoolSize: 10, // Maximum number of connections in the pool
+  minPoolSize: 1, // Minimum number of connections to maintain
 };
 
 let client: MongoClient;
@@ -31,11 +33,6 @@ if (!uri) {
     if (!uri.startsWith('mongodb://') && !uri.startsWith('mongodb+srv://')) {
       throw new Error('Invalid MongoDB URI format. Must start with mongodb:// or mongodb+srv://');
     }
-    
-    // Log connection attempt (without exposing password)
-    const uriForLogging = uri.replace(/\/\/([^:]+):([^@]+)@/, '//$1:***@');
-    console.log('MongoDB connection URI:', uriForLogging);
-    console.log('MongoDB connection options:', JSON.stringify(options, null, 2));
   } catch (error) {
     console.error('Invalid MongoDB URI:', error);
     clientPromise = Promise.reject(error);

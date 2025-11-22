@@ -13,37 +13,32 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const meetingId = params.id;
-  console.log('GET /api/meetings/[id] - ID:', meetingId);
-  console.log('MONGODB_URI exists:', !!process.env.MONGODB_URI);
-  console.log('MONGODB_DB:', process.env.MONGODB_DB);
-  console.log('NODE_ENV:', process.env.NODE_ENV);
   
   try {
-    const client = await Promise.race([
-      clientPromise,
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), 10000))
-    ]) as any;
-    
+    // Get client directly - connection is pooled
+    const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB || 'calendarr');
-    const meeting = await db.collection('meetings').findOne({ id: meetingId });
     
-    console.log('Meeting found in DB:', !!meeting);
-    console.log('Meeting ID searched:', meetingId);
+    // Use projection to exclude _id and only fetch needed fields
+    // Add hint to use index if available (will be created via script)
+    const meeting = await db.collection('meetings').findOne(
+      { id: meetingId },
+      { 
+        projection: { _id: 0 },
+        // Optimize query - MongoDB will use index on 'id' field if available
+      }
+    );
 
     if (meeting) {
-      const { _id, ...sanitized } = meeting as MeetingRecord & { _id?: unknown };
+      const sanitized = meeting as MeetingRecord;
       sanitized.availability = sanitized.availability ?? [];
-      await rememberMeeting(sanitized);
-      return NextResponse.json({ meeting: sanitized, source: 'database' });
+      return NextResponse.json({ meeting: sanitized });
     }
   } catch (error: any) {
     console.error('Database error:', error.message);
-    console.error('Full error:', error);
     
-    // In production, don't fall back to memory (serverless doesn't share memory)
     // Only use memory fallback in development
     if (process.env.NODE_ENV === 'development') {
-      console.warn('Attempting memory fallback (dev only)');
       const fallbackMeeting = await getRememberedMeeting(meetingId);
       if (fallbackMeeting) {
         return NextResponse.json({ meeting: fallbackMeeting, source: 'memory' });
@@ -51,14 +46,14 @@ export async function GET(
     }
   }
 
-  // Check memory as last resort (only works in dev or if same instance)
-  const fallbackMeeting = await getRememberedMeeting(meetingId);
-  if (fallbackMeeting) {
-    console.log('Found meeting in memory fallback');
-    return NextResponse.json({ meeting: fallbackMeeting, source: 'memory' });
+  // Check memory as last resort (dev only)
+  if (process.env.NODE_ENV === 'development') {
+    const fallbackMeeting = await getRememberedMeeting(meetingId);
+    if (fallbackMeeting) {
+      return NextResponse.json({ meeting: fallbackMeeting, source: 'memory' });
+    }
   }
 
-  console.error('Meeting not found:', meetingId);
   return NextResponse.json({ error: 'Meeting not found' }, { status: 404 });
 }
 
@@ -67,16 +62,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  let parsedBody: {
-    userId?: string;
-    userName?: string;
-    slots?: string[];
-  } = {};
-
   try {
     const body = await request.json();
     const { userId, userName, slots } = body;
-    parsedBody = { userId, userName, slots };
     
     if (!userId || !userName || !slots) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -85,64 +73,89 @@ export async function PATCH(
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB || 'calendarr');
 
-    // Check if user already has availability
-    const meeting = await db.collection('meetings').findOne({ id: params.id });
-
+    const uniqueSlots = Array.from(new Set(slots)).sort();
+    
+    // First, check if meeting exists and if user already has an entry
+    const meeting = await db.collection('meetings').findOne(
+      { id: params.id },
+      { projection: { _id: 0, availability: 1 } }
+    );
+    
     if (!meeting) {
-      const fallback = await upsertAvailabilityInMemory(
-        params.id,
-        userId,
-        userName,
-        slots
-      );
-
-      if (fallback) {
-        return NextResponse.json({ meeting: fallback, source: 'memory' });
+      if (process.env.NODE_ENV === 'development') {
+        const fallback = await upsertAvailabilityInMemory(params.id, userId, userName, slots);
+        if (fallback) {
+          return NextResponse.json({ meeting: fallback, source: 'memory' });
+        }
       }
-
       return NextResponse.json({ error: 'Meeting not found' }, { status: 404 });
     }
 
-    const uniqueSlots = Array.from(new Set(slots)).sort();
     const existingEntry = meeting.availability?.find((a: any) => a.userId === userId);
 
+    // Use findOneAndUpdate to atomically update and return the document in one operation
+    // This reduces round trips from 2-3 queries to just 1
     if (existingEntry) {
       // Update existing entry
-      await db.collection('meetings').updateOne(
+      const result = await db.collection('meetings').findOneAndUpdate(
         { id: params.id, 'availability.userId': userId },
-        { $set: { 'availability.$.slots': uniqueSlots } } as any
+        { 
+          $set: { 
+            'availability.$.userName': userName, 
+            'availability.$.slots': uniqueSlots 
+          } 
+        },
+        {
+          returnDocument: 'after',
+          projection: { _id: 0 }
+        }
       );
+      
+      if (result.value) {
+        const sanitized = result.value as MeetingRecord;
+        sanitized.availability = sanitized.availability ?? [];
+        return NextResponse.json({ meeting: sanitized });
+      }
     } else {
       // Add new entry
-      await db.collection('meetings').updateOne(
+      const result = await db.collection('meetings').findOneAndUpdate(
         { id: params.id },
-        { $push: { availability: { userId, userName, slots: uniqueSlots } } } as any
+        { 
+          $push: { 
+            availability: { userId, userName, slots: uniqueSlots } 
+          } 
+        },
+        {
+          returnDocument: 'after',
+          projection: { _id: 0 }
+        }
       );
+      
+      if (result.value) {
+        const sanitized = result.value as MeetingRecord;
+        sanitized.availability = sanitized.availability ?? [];
+        return NextResponse.json({ meeting: sanitized });
+      }
     }
 
-    const updatedMeeting = await db.collection('meetings').findOne({ id: params.id });
-    const { _id, ...sanitized } = updatedMeeting as MeetingRecord & { _id?: unknown };
-    sanitized.availability = sanitized.availability ?? [];
-    await rememberMeeting(sanitized);
-
-    return NextResponse.json({ meeting: sanitized, source: 'database' });
-  } catch (error) {
-    console.warn('Database error during update, attempting memory fallback:', error);
-    const { userId, userName, slots } = parsedBody;
-
-    if (!userId || !userName || !slots) {
-      return NextResponse.json({ error: 'Failed to update meeting' }, { status: 500 });
-    }
-
-    const fallback = await upsertAvailabilityInMemory(
-      params.id,
-      userId,
-      userName,
-      slots
-    );
-
-    if (fallback) {
-      return NextResponse.json({ meeting: fallback, source: 'memory' });
+    return NextResponse.json({ error: 'Failed to update meeting' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Database error during update:', error.message);
+    
+    // Only use memory fallback in development
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        const body = await request.json();
+        const { userId, userName, slots } = body;
+        if (userId && userName && slots) {
+          const fallback = await upsertAvailabilityInMemory(params.id, userId, userName, slots);
+          if (fallback) {
+            return NextResponse.json({ meeting: fallback, source: 'memory' });
+          }
+        }
+      } catch {
+        // Ignore fallback errors
+      }
     }
 
     return NextResponse.json({ error: 'Failed to update meeting' }, { status: 500 });
