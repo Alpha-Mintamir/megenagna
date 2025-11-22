@@ -22,6 +22,7 @@ export interface MeetingRecord {
   description: string;
   dateRange: DateRange;
   timeRange: TimeRange;
+  duration: number; // Duration in hours (e.g., 0.5, 1, 1.5, 2)
   createdBy: string;
   availability: AvailabilityEntry[];
   createdAt: string;

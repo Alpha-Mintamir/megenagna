@@ -66,15 +66,31 @@ export default function MeetingPageClient({ meetingId }: Props) {
     fetchMeeting();
   }, [meetingId]);
 
+  // Get meeting duration, default to 1 hour for backwards compatibility
+  const meetingDuration = meeting?.duration || 1;
+
   // Generate time slots - MUST be called before any early returns
+  // Generate individual hour slots for display, but group them by duration
   const timeSlots = useMemo(() => {
     if (!meeting) return [];
     const slots = [];
-    for (let hour = meeting.timeRange.start.hour; hour < meeting.timeRange.end.hour; hour++) {
-      slots.push(`${hour.toString().padStart(2, '0')}:00`);
+    const durationHours = meeting?.duration || 1;
+    
+    // Generate slots based on duration blocks
+    // e.g., if duration is 2 hours and range is 9-17, slots are: 9:00, 11:00, 13:00, 15:00
+    for (let hour = meeting.timeRange.start.hour; hour < meeting.timeRange.end.hour; hour += durationHours) {
+      // Only add slot if there's enough time remaining
+      if (hour + durationHours <= meeting.timeRange.end.hour) {
+        slots.push({
+          startHour: hour,
+          displayTime: `${hour.toString().padStart(2, '0')}:00`,
+          durationHours: durationHours
+        });
+      }
     }
     return slots;
   }, [meeting]);
+
 
   // Generate date range - MUST be called before any early returns
   const dates = useMemo(() => {
@@ -146,30 +162,50 @@ export default function MeetingPageClient({ meetingId }: Props) {
     );
   }
 
-  const handleSlotClick = (date: Date, time: string) => {
+  // Helper function to get all slot IDs for a duration block
+  const getSlotIdsForDuration = (date: Date, startHour: number, durationHours: number): string[] => {
+    const slotIds: string[] = [];
+    const dateStr = date.toISOString().split('T')[0];
+    
+    for (let i = 0; i < durationHours; i++) {
+      const hour = startHour + i;
+      if (hour < meeting.timeRange.end.hour) {
+        slotIds.push(`${dateStr}T${hour.toString().padStart(2, '0')}:00`);
+      }
+    }
+    
+    return slotIds;
+  };
+
+  const handleSlotClick = (date: Date, startHour: number, durationHours: number) => {
     if (hasSubmitted) return;
     
-    const slotId = `${date.toISOString().split('T')[0]}T${time}`;
+    const slotIds = getSlotIdsForDuration(date, startHour, durationHours);
     const newSelected = new Set(selectedSlots);
     
-    if (newSelected.has(slotId)) {
-      newSelected.delete(slotId);
+    // Check if all slots in this duration block are already selected
+    const allSelected = slotIds.every(id => newSelected.has(id));
+    
+    if (allSelected) {
+      // Deselect all slots in this duration block
+      slotIds.forEach(id => newSelected.delete(id));
     } else {
-      newSelected.add(slotId);
+      // Select all slots in this duration block
+      slotIds.forEach(id => newSelected.add(id));
     }
     
     setSelectedSlots(newSelected);
   };
 
-  const handleMouseDown = (date: Date, time: string) => {
+  const handleMouseDown = (date: Date, startHour: number, durationHours: number) => {
     if (hasSubmitted) return;
     setIsSelecting(true);
-    handleSlotClick(date, time);
+    handleSlotClick(date, startHour, durationHours);
   };
 
-  const handleMouseEnter = (date: Date, time: string) => {
+  const handleMouseEnter = (date: Date, startHour: number, durationHours: number) => {
     if (isSelecting && !hasSubmitted) {
-      handleSlotClick(date, time);
+      handleSlotClick(date, startHour, durationHours);
     }
   };
 
@@ -205,12 +241,31 @@ export default function MeetingPageClient({ meetingId }: Props) {
     }
   };
 
-  const getSlotColor = (slotId: string) => {
-    if (selectedSlots.has(slotId) && !hasSubmitted) {
+  // Check if a duration block is selected (all its hour slots are selected)
+  const isDurationBlockSelected = (date: Date, startHour: number, durationHours: number): boolean => {
+    const slotIds = getSlotIdsForDuration(date, startHour, durationHours);
+    return slotIds.length > 0 && slotIds.every(id => selectedSlots.has(id));
+  };
+
+  // Get the minimum availability count for a duration block
+  const getDurationBlockCount = (date: Date, startHour: number, durationHours: number): number => {
+    const slotIds = getSlotIdsForDuration(date, startHour, durationHours);
+    if (slotIds.length === 0) return 0;
+    
+    // Return the minimum count across all slots in the block
+    // This ensures we only show availability if ALL slots in the block are available
+    const counts = slotIds.map(id => slotCounts[id] || 0);
+    return Math.min(...counts);
+  };
+
+  const getSlotColor = (date: Date, startHour: number, durationHours: number) => {
+    const isSelected = isDurationBlockSelected(date, startHour, durationHours);
+    
+    if (isSelected && !hasSubmitted) {
       return "bg-blue-500 border-blue-600";
     }
     
-    const count = slotCounts[slotId] || 0;
+    const count = getDurationBlockCount(date, startHour, durationHours);
     if (count === 0) return "bg-gray-100 border-gray-200";
     
     const intensity = count / Math.max(maxCount, 1);
@@ -450,44 +505,60 @@ export default function MeetingPageClient({ meetingId }: Props) {
               })}
 
               {/* Time Slots */}
-              {timeSlots.map((time) => (
-                <React.Fragment key={`group-${time}`}>
-                  <div key={`time-${time}`} className="sticky left-0 bg-gradient-to-r from-white to-gray-50 z-10 p-2 sm:p-3 text-right font-bold text-gray-800 border-r-2 sm:border-r-4 border-ethiopian-green/20 rounded-l-md sm:rounded-l-lg">
-                    <span className="text-sm sm:text-base md:text-lg">{time}</span>
-                  </div>
-                  {dates.map((date, idx) => {
-                    const slotId = `${date.toISOString().split('T')[0]}T${time}`;
-                    const count = slotCounts[slotId] || 0;
-                    
-                    return (
-                      <div
-                        key={`${date}-${time}`}
-                        className={`relative border-2 cursor-pointer select-none slot-cell rounded-md sm:rounded-lg ${getSlotColor(slotId)} ${!hasSubmitted ? 'active:scale-95 sm:hover:scale-105' : ''} touch-manipulation`}
-                        style={{ height: '50px', minHeight: '50px' }}
-                        onMouseDown={() => handleMouseDown(date, time)}
-                        onMouseEnter={() => handleMouseEnter(date, time)}
-                        onTouchStart={(e) => {
-                          e.preventDefault();
-                          handleMouseDown(date, time);
-                        }}
-                      >
-                        {count > 0 && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="font-ethiopic font-bold text-white drop-shadow-lg text-base sm:text-lg md:text-xl">
-                              {toGeezNumeral(count)}
-                            </span>
-                          </div>
-                        )}
-                        {selectedSlots.has(slotId) && !hasSubmitted && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <Check className="text-white drop-shadow-lg" size={18} style={{ width: '18px', height: '18px' }} />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </React.Fragment>
-              ))}
+              {timeSlots.map((slotInfo) => {
+                const durationHours = slotInfo.durationHours || 1;
+                const endHour = slotInfo.startHour + durationHours;
+                const timeDisplay = durationHours === 1 
+                  ? slotInfo.displayTime 
+                  : `${slotInfo.displayTime} - ${endHour.toString().padStart(2, '0')}:00`;
+                
+                return (
+                  <React.Fragment key={`group-${slotInfo.startHour}`}>
+                    <div key={`time-${slotInfo.startHour}`} className="sticky left-0 bg-gradient-to-r from-white to-gray-50 z-10 p-2 sm:p-3 text-right font-bold text-gray-800 border-r-2 sm:border-r-4 border-ethiopian-green/20 rounded-l-md sm:rounded-l-lg">
+                      <span className="text-sm sm:text-base md:text-lg">{timeDisplay}</span>
+                      {durationHours > 1 && (
+                        <div className="text-[10px] sm:text-xs text-gray-500 mt-1">
+                          ({durationHours}h)
+                        </div>
+                      )}
+                    </div>
+                    {dates.map((date, idx) => {
+                      const count = getDurationBlockCount(date, slotInfo.startHour, durationHours);
+                      const isSelected = isDurationBlockSelected(date, slotInfo.startHour, durationHours);
+                      
+                      return (
+                        <div
+                          key={`${date}-${slotInfo.startHour}`}
+                          className={`relative border-2 cursor-pointer select-none slot-cell rounded-md sm:rounded-lg ${getSlotColor(date, slotInfo.startHour, durationHours)} ${!hasSubmitted ? 'active:scale-95 sm:hover:scale-105' : ''} touch-manipulation`}
+                          style={{ 
+                            height: `${50 * durationHours}px`, 
+                            minHeight: `${50 * durationHours}px` 
+                          }}
+                          onMouseDown={() => handleMouseDown(date, slotInfo.startHour, durationHours)}
+                          onMouseEnter={() => handleMouseEnter(date, slotInfo.startHour, durationHours)}
+                          onTouchStart={(e) => {
+                            e.preventDefault();
+                            handleMouseDown(date, slotInfo.startHour, durationHours);
+                          }}
+                        >
+                          {count > 0 && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="font-ethiopic font-bold text-white drop-shadow-lg text-base sm:text-lg md:text-xl">
+                                {toGeezNumeral(count)}
+                              </span>
+                            </div>
+                          )}
+                          {isSelected && !hasSubmitted && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Check className="text-white drop-shadow-lg" size={18} style={{ width: '18px', height: '18px' }} />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </React.Fragment>
+                );
+              })}
             </div>
           </div>
         </div>

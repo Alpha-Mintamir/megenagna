@@ -18,6 +18,7 @@ export default function CreateMeeting() {
   const [endDate, setEndDate] = useState(nextWeek.toISOString().split('T')[0]);
   const [startHour, setStartHour] = useState(9);
   const [endHour, setEndHour] = useState(17);
+  const [duration, setDuration] = useState(1); // Duration in hours, default 1 hour
   const [creatorName, setCreatorName] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,6 +46,7 @@ export default function CreateMeeting() {
             start: { hour: startHour, minute: 0 },
             end: { hour: endHour, minute: 0 },
           },
+          duration: duration,
           createdBy: creatorName.trim(),
         }),
       });
@@ -232,6 +234,30 @@ export default function CreateMeeting() {
                 </select>
               </div>
             </div>
+          </div>
+
+          {/* Meeting Duration */}
+          <div className="mb-6 sm:mb-8">
+            <label className="block text-base sm:text-lg font-bold text-gray-900 mb-2 md:mb-3 flex items-center gap-2">
+              <span>Meeting Duration</span>
+              <span className="text-xs sm:text-sm text-gray-500 font-normal">(How long each meeting slot will be)</span>
+            </label>
+            <select
+              value={duration}
+              onChange={(e) => setDuration(Number(e.target.value))}
+              className="w-full px-4 md:px-6 py-4 md:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base md:text-lg"
+            >
+              <option value={0.5}>30 minutes</option>
+              <option value={1}>1 hour</option>
+              <option value={1.5}>1.5 hours</option>
+              <option value={2}>2 hours</option>
+              <option value={2.5}>2.5 hours</option>
+              <option value={3}>3 hours</option>
+              <option value={4}>4 hours</option>
+            </select>
+            <p className="text-xs sm:text-sm text-gray-600 mt-2">
+              When participants select a time slot, it will block {duration === 1 ? '1 hour' : duration === 0.5 ? '30 minutes' : `${duration} hours`} of their calendar.
+            </p>
           </div>
 
           {/* Mobile: Sticky Bottom Button */}

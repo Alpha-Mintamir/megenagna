@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, dateRange, timeRange, createdBy } = body;
+    const { title, description, dateRange, timeRange, duration, createdBy } = body;
     
     if (!title || !dateRange || !timeRange || !createdBy) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
       description: description || '',
       dateRange,
       timeRange,
+      duration: duration || 1, // Default to 1 hour if not provided
       createdBy,
       availability: [],
       createdAt: new Date().toISOString(),
