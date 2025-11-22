@@ -23,6 +23,20 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  // Add cache headers to prevent stale JavaScript
+  async headers() {
+    return [
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+        ],
+      },
+    ]
+  },
 }
 
 export default nextConfig
