@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Calendar, Clock, Sparkles, Info } from "lucide-react";
 import { getEthiopianToday, addDaysToEthiopianDate } from "@/lib/ethiopian-calendar";
+import EthiopianDatePicker from "@/components/EthiopianDatePicker";
 
 export default function CreateMeeting() {
   const router = useRouter();
@@ -172,24 +173,18 @@ export default function CreateMeeting() {
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Start Date</label>
-                <input
-                  type="date"
+                <EthiopianDatePicker
+                  label="Start Date"
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full px-4 sm:px-6 py-3 sm:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base sm:text-lg"
-                  required
+                  onChange={(date) => setStartDate(date)}
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">End Date</label>
-                <input
-                  type="date"
+                <EthiopianDatePicker
+                  label="End Date"
                   value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  min={startDate}
-                  className="w-full px-4 sm:px-6 py-3 sm:py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base sm:text-lg"
-                  required
+                  onChange={(date) => setEndDate(date)}
+                  minDate={startDate}
                 />
               </div>
             </div>
