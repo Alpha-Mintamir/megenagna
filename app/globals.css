@@ -135,6 +135,11 @@ html {
     max-width: 100%;
   }
   
+  /* Increase base font size for better readability on mobile */
+  html {
+    font-size: 16px;
+  }
+  
   /* Ensure no overflow */
   main, section, div {
     overflow-x: hidden;

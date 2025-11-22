@@ -67,6 +67,24 @@ export default function AvailabilityGrid() {
     );
     const hasCurrentUser = slot?.participants.includes(currentParticipant);
     
+    // Set drag mode based on current state of the clicked slot
+    setDragMode(hasCurrentUser ? 'deselect' : 'select');
+    
+    // Immediately toggle the first slot
+    toggleTimeSlot(date, hour);
+  };
+
+  const handleTouchStart = (date: Date, hour: number, e: React.TouchEvent) => {
+    // Prevent scrolling while dragging, but allow it for quick taps if needed
+    // However, for a grid, preventing default usually gives better drag control
+    // e.preventDefault(); 
+    
+    setIsDragging(true);
+    const slot = useSchedulerStore.getState().timeSlots.get(
+      `${date.toISOString().split('T')[0]}_${hour}`
+    );
+    const hasCurrentUser = slot?.participants.includes(currentParticipant);
+    
     setDragMode(hasCurrentUser ? 'deselect' : 'select');
     toggleTimeSlot(date, hour);
   };
@@ -86,6 +104,41 @@ export default function AvailabilityGrid() {
       }
     }
   };
+
+  // Handle touch move for mobile dragging
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (isDragging && dragMode) {
+      const touch = e.touches[0];
+      const element = document.elementFromPoint(touch.clientX, touch.clientY);
+      
+      if (element) {
+        // Try to get data attributes from the element or its parent
+        const target = element.closest('[data-date][data-hour]') as HTMLElement;
+        
+        if (target) {
+          const dateStr = target.dataset.date;
+          const hourStr = target.dataset.hour;
+          
+          if (dateStr && hourStr) {
+            const date = new Date(dateStr);
+            const hour = parseInt(hourStr, 10);
+            
+            const slot = useSchedulerStore.getState().timeSlots.get(
+              `${date.toISOString().split('T')[0]}_${hour}`
+            );
+            const hasCurrentUser = slot?.participants.includes(currentParticipant);
+            
+            if (
+              (dragMode === 'select' && !hasCurrentUser) ||
+              (dragMode === 'deselect' && hasCurrentUser)
+            ) {
+              toggleTimeSlot(date, hour);
+            }
+          }
+        }
+      }
+    }
+  };
   
   const handleMouseUp = () => {
     setIsDragging(false);
@@ -94,7 +147,11 @@ export default function AvailabilityGrid() {
   
   useEffect(() => {
     document.addEventListener('mouseup', handleMouseUp);
-    return () => document.removeEventListener('mouseup', handleMouseUp);
+    document.addEventListener('touchend', handleMouseUp);
+    return () => {
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchend', handleMouseUp);
+    };
   }, []);
   
   const getCellColor = (date: Date, hour: number): string => {
@@ -181,21 +238,24 @@ export default function AvailabilityGrid() {
                   return (
                     <div
                       key={hour}
-                      onTouchStart={() => handleMouseDown(date, hour)}
+                      data-date={date.toISOString()}
+                      data-hour={hour}
+                      onTouchStart={(e) => handleTouchStart(date, hour, e)}
+                      onTouchMove={handleTouchMove}
                       onMouseDown={() => handleMouseDown(date, hour)}
                       onMouseEnter={() => handleMouseEnter(date, hour)}
                       className={`
-                        flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-700 cursor-pointer transition-all touch-manipulation
+                        flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 cursor-pointer transition-all touch-manipulation
                         ${getCellColor(date, hour)}
                         ${isAvailable ? 'ring-2 ring-inset ring-ethiopian-red' : ''}
                         active:opacity-80
                       `}
                     >
-                      <span className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                         {formatHour(hour)}
                       </span>
                       {count > 0 && (
-                        <span className="text-xs font-bold text-white bg-black bg-opacity-50 px-2 py-1 rounded">
+                        <span className="text-xs font-bold text-white bg-black bg-opacity-50 px-2.5 py-1 rounded-full">
                           {count}
                         </span>
                       )}
@@ -259,10 +319,12 @@ export default function AvailabilityGrid() {
                     return (
                       <div
                         key={hour}
+                        data-date={date.toISOString()}
+                        data-hour={hour}
                         onMouseDown={() => handleMouseDown(date, hour)}
                         onMouseEnter={() => handleMouseEnter(date, hour)}
                         className={`
-                          h-12 border-b border-r border-gray-200 dark:border-gray-700 cursor-pointer transition-all
+                          h-14 border-b border-r border-gray-200 dark:border-gray-700 cursor-pointer transition-all
                           ${getCellColor(date, hour)}
                           ${isAvailable ? 'ring-2 ring-inset ring-ethiopian-red' : ''}
                           hover:opacity-80

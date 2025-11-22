@@ -97,10 +97,10 @@ export default function EthiopianCalendar({ selectedDates, onDateSelect, onDateR
           </button>
           
           <div className="text-center">
-            <h2 className="text-base md:text-2xl font-ethiopic font-bold text-ethiopian-dark-green dark:text-ethiopian-green">
+            <h2 className="text-xl md:text-2xl font-ethiopic font-bold text-ethiopian-dark-green dark:text-ethiopian-green">
               {ETHIOPIAN_MONTHS[currentDate.month - 1]}
             </h2>
-            <p className="text-sm md:text-lg font-ethiopic text-ethiopian-green">
+            <p className="text-base md:text-lg font-ethiopic text-ethiopian-green">
               {toEthiopicNumeral(currentDate.year)}
             </p>
           </div>
@@ -117,7 +117,7 @@ export default function EthiopianCalendar({ selectedDates, onDateSelect, onDateR
         
         <button
           onClick={goToToday}
-          className="w-full py-1.5 md:py-2 bg-ethiopian-green text-white rounded-lg hover:bg-ethiopian-dark-green transition-colors font-semibold text-sm md:text-base touch-manipulation"
+          className="w-full py-2 bg-ethiopian-green text-white rounded-lg hover:bg-ethiopian-dark-green transition-colors font-semibold text-base touch-manipulation"
         >
           Today
         </button>
@@ -126,7 +126,7 @@ export default function EthiopianCalendar({ selectedDates, onDateSelect, onDateR
       {/* Weekday headers */}
       <div className="grid grid-cols-7 gap-1 md:gap-2 mb-1 md:mb-2">
         {['ሰ', 'ማ', 'ረ', 'ሐ', 'አ', 'ቅ', 'እ'].map((day, i) => (
-          <div key={i} className="text-center font-ethiopic font-bold text-ethiopian-dark-green dark:text-ethiopian-green py-1 md:py-2 text-xs md:text-sm">
+          <div key={i} className="text-center font-ethiopic font-bold text-ethiopian-dark-green dark:text-ethiopian-green py-1 md:py-2 text-sm md:text-sm">
             {day}
           </div>
         ))}
@@ -149,7 +149,7 @@ export default function EthiopianCalendar({ selectedDates, onDateSelect, onDateR
               onClick={() => !past && handleDateClick(day)}
               disabled={past}
               className={`
-                aspect-square rounded-md md:rounded-lg font-ethiopic text-xs md:text-lg transition-all touch-manipulation
+                aspect-square rounded-md md:rounded-lg font-ethiopic text-sm md:text-lg transition-all touch-manipulation
                 ${selected 
                   ? 'bg-ethiopian-green text-white ring-2 md:ring-4 ring-ethiopian-yellow shadow-md md:shadow-lg transform scale-105' 
                   : 'bg-gray-50 dark:bg-gray-700 hover:bg-ethiopian-light-gold dark:hover:bg-gray-600 text-ethiopian-dark-green dark:text-gray-200'
@@ -167,7 +167,7 @@ export default function EthiopianCalendar({ selectedDates, onDateSelect, onDateR
       {/* Selected dates counter */}
       {selectedDates.length > 0 && (
         <div className="mt-3 md:mt-4 p-2 md:p-3 bg-ethiopian-light-gold dark:bg-gray-700 rounded-lg text-center">
-          <p className="text-ethiopian-dark-green dark:text-gray-200 font-semibold text-xs md:text-sm">
+          <p className="text-ethiopian-dark-green dark:text-gray-200 font-semibold text-sm">
             {selectedDates.length} {selectedDates.length === 1 ? 'day' : 'days'} selected
           </p>
         </div>
