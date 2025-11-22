@@ -7,6 +7,7 @@
 
 # testing
 /coverage
+# Keep test files in repo, just exclude coverage
 
 # next.js
 /.next/

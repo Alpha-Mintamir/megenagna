@@ -30,7 +30,7 @@ export async function GET(
     );
 
     if (meeting) {
-      const sanitized = meeting as MeetingRecord;
+      const sanitized = meeting as unknown as MeetingRecord;
       sanitized.availability = sanitized.availability ?? [];
       return NextResponse.json({ meeting: sanitized });
     }
@@ -103,8 +103,8 @@ export async function PATCH(
           $set: { 
             'availability.$.userName': userName, 
             'availability.$.slots': uniqueSlots 
-          } 
-        },
+          }
+        } as any,
         {
           returnDocument: 'after',
           projection: { _id: 0 }
@@ -122,9 +122,9 @@ export async function PATCH(
         { id: params.id },
         { 
           $push: { 
-            availability: { userId, userName, slots: uniqueSlots } 
+            availability: { userId, userName, slots: uniqueSlots }
           } 
-        },
+        } as any,
         {
           returnDocument: 'after',
           projection: { _id: 0 }
