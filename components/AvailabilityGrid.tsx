@@ -61,7 +61,8 @@ export default function AvailabilityGrid() {
   
   const handleMouseDown = (date: Date, hour: number) => {
     // Ignore mouse events that fire immediately after touch events
-    if (Date.now() - lastTouchTimeRef.current < 500) return;
+    // Increase timeout to 1000ms to be safe on all devices
+    if (Date.now() - lastTouchTimeRef.current < 1000) return;
 
     setIsDragging(true);
     const count = getAvailabilityCount(date, hour);
