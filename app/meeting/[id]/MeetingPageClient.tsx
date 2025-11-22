@@ -372,26 +372,44 @@ export default function MeetingPageClient({ meetingId }: Props) {
       <main className="max-w-7xl mx-auto px-4 py-4 sm:py-6 md:py-8">
         {/* Mobile: Sticky Bottom Input */}
         {!hasSubmitted && (
-          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-2xl z-40 p-4">
+          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-br from-white to-gray-50 border-t-4 border-ethiopian-green shadow-2xl z-40 p-4">
+            {/* Progress bar */}
+            <div className="mb-3">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-semibold text-gray-700">Progress</span>
+                <span className="text-xs font-bold text-ethiopian-green">
+                  <span className="font-ethiopic">{toGeezNumeral(selectedSlots.size)}</span> slots
+                </span>
+              </div>
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+                <div 
+                  className="h-full bg-gradient-to-r from-ethiopian-green to-green-500 transition-all duration-500 ease-out rounded-full"
+                  style={{ 
+                    width: `${Math.min((selectedSlots.size / Math.max(timeSlots.length * dates.length, 1)) * 100, 100)}%` 
+                  }}
+                ></div>
+              </div>
+            </div>
+            
             <div className="flex items-center gap-2 mb-2">
               <input
                 type="text"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
                 placeholder="Your name"
-                className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base touch-manipulation"
+                className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-base touch-manipulation bg-white shadow-sm"
               />
               <button
                 onClick={handleSubmit}
                 disabled={selectedSlots.size === 0 || !userName.trim()}
-                className="px-6 py-3 bg-gradient-to-r from-ethiopian-green to-green-600 text-white rounded-xl font-bold text-base shadow-lg disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all touch-manipulation flex items-center justify-center min-w-[80px]"
+                className="px-5 py-3 bg-gradient-to-r from-ethiopian-green to-green-600 text-white rounded-xl font-bold text-base shadow-lg disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all touch-manipulation flex items-center justify-center min-w-[90px] active:scale-95"
               >
-                <Check size={20} />
-                Submit
+                <Check size={18} />
+                <span className="ml-1">Submit</span>
               </button>
             </div>
             <div className="flex items-center gap-2 text-xs text-gray-600">
-              <div className="w-4 h-4 bg-blue-500 border-2 border-blue-600 rounded"></div>
+              <div className="w-3 h-3 bg-blue-500 border-2 border-blue-600 rounded shadow-sm"></div>
               <p>
                 Tap slots to select · <span className="font-ethiopic font-bold text-ethiopian-green">{toGeezNumeral(selectedSlots.size)}</span> selected
               </p>
@@ -401,33 +419,96 @@ export default function MeetingPageClient({ meetingId }: Props) {
         
         {/* Desktop: User Input Section */}
         {!hasSubmitted && (
-          <div className="hidden md:block bg-gradient-to-br from-white to-ethiopian-green/5 rounded-2xl shadow-2xl p-8 mb-8 ethiopian-border animate-fadeIn">
-            <h2 className="text-2xl font-bold mb-2 text-gray-900">
-              Mark Your Availability
-            </h2>
-            <p className="text-gray-600 mb-6">Select the times when you're free to meet</p>
-            <div className="flex items-center gap-4">
-              <input
-                type="text"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                placeholder="Enter your name"
-                className="flex-1 px-6 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-lg"
-              />
-              <button
-                onClick={handleSubmit}
-                disabled={selectedSlots.size === 0 || !userName.trim()}
-                className="px-8 py-4 bg-gradient-to-r from-ethiopian-green to-green-600 text-white rounded-xl font-bold text-lg hover:shadow-2xl disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all flex items-center gap-2"
-              >
-                <Check size={24} />
-                Submit
-              </button>
-            </div>
-            <div className="flex items-center gap-2 mt-4 text-sm text-gray-600">
-              <div className="w-6 h-6 bg-blue-500 border-2 border-blue-600 rounded"></div>
-              <p>
-                Click and drag to select times when you're available · Selected: <span className="font-ethiopic font-bold text-ethiopian-green">{toGeezNumeral(selectedSlots.size)}</span> slots
-              </p>
+          <div className="hidden md:block relative overflow-hidden bg-gradient-to-br from-white via-ethiopian-green/5 to-white rounded-3xl shadow-2xl p-10 mb-8 ethiopian-border animate-fadeIn">
+            {/* Decorative background elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-ethiopian-green/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-ethiopian-yellow/10 rounded-full blur-2xl -ml-24 -mb-24"></div>
+            
+            <div className="relative z-10">
+              {/* Header with icon */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-ethiopian-green to-green-600 flex items-center justify-center shadow-lg">
+                  <Calendar className="text-white" size={28} />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold mb-1 text-gray-900">
+                    Mark Your Availability
+                  </h2>
+                  <p className="text-gray-600 text-lg">Select the times when you're free to meet</p>
+                </div>
+              </div>
+
+              {/* Progress indicator */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-semibold text-gray-700">Selection Progress</span>
+                  <span className="text-sm font-bold text-ethiopian-green">
+                    <span className="font-ethiopic">{toGeezNumeral(selectedSlots.size)}</span> slots selected
+                  </span>
+                </div>
+                <div className="h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+                  <div 
+                    className="h-full bg-gradient-to-r from-ethiopian-green via-green-500 to-ethiopian-green transition-all duration-500 ease-out rounded-full"
+                    style={{ 
+                      width: `${Math.min((selectedSlots.size / Math.max(timeSlots.length * dates.length, 1)) * 100, 100)}%` 
+                    }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Input Section */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-gray-100 shadow-lg mb-6">
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Your Name
+                    </label>
+                    <input
+                      type="text"
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
+                      placeholder="Enter your name"
+                      className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-ethiopian-green/20 focus:border-ethiopian-green transition-all text-lg font-medium bg-white"
+                    />
+                  </div>
+                  <div className="pt-7">
+                    <button
+                      onClick={handleSubmit}
+                      disabled={selectedSlots.size === 0 || !userName.trim()}
+                      className="px-10 py-4 bg-gradient-to-r from-ethiopian-green via-green-600 to-ethiopian-green text-white rounded-xl font-bold text-lg hover:shadow-2xl hover:scale-105 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all flex items-center gap-3 min-w-[160px] justify-center"
+                    >
+                      <Check size={24} />
+                      Submit Availability
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Instructions */}
+              <div className="flex items-start gap-4 p-5 bg-gradient-to-r from-blue-50 to-ethiopian-green/10 rounded-xl border-2 border-blue-100">
+                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">💡</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-gray-700 font-medium mb-2">
+                    <span className="font-semibold text-gray-900">How to select:</span> Click on time slots in the calendar below to mark your availability. Each selection represents a <span className="font-bold text-ethiopian-green">{meetingDuration === 1 ? '1-hour' : meetingDuration === 0.5 ? '30-minute' : `${meetingDuration}-hour`}</span> meeting block.
+                  </p>
+                  <div className="flex items-center gap-4 mt-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 bg-blue-500 border-2 border-blue-600 rounded shadow-sm"></div>
+                      <span className="text-gray-600">Your selection</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 bg-ethiopian-green border-2 border-ethiopian-green rounded shadow-sm"></div>
+                      <span className="text-gray-600">Most available</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 bg-gray-200 border-2 border-gray-300 rounded shadow-sm"></div>
+                      <span className="text-gray-600">No responses</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
