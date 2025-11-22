@@ -102,16 +102,13 @@ export default function CreateMeeting() {
               <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
               <span>Back to Home</span>
             </button>
-            <div className="flex items-center gap-4">
-              <Sparkles className="text-ethiopian-green" size={40} />
-              <div>
-                <h1 className="text-4xl font-bold text-ethiopian-green mb-1 flex items-center gap-3">
-                  <span className="font-ethiopic">መገናኛ</span>
-                  <span>·</span>
-                  <span>Create Meeting</span>
-                </h1>
-                <p className="text-xl text-gray-700">Set up a meeting and share with your team</p>
-              </div>
+            <div>
+              <h1 className="text-4xl font-bold text-ethiopian-green mb-1 flex items-center gap-3">
+                <span className="font-ethiopic">መገናኛ</span>
+                <span>·</span>
+                <span>Create Meeting</span>
+              </h1>
+              <p className="text-xl text-gray-700">Set up a meeting and share with your team</p>
             </div>
           </div>
         </div>
