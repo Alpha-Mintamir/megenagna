@@ -127,13 +127,17 @@ export function gregorianToEthiopian(date: Date): EthiopianDate {
     ethYear++;
   }
   
-  // Calculate days from Ethiopian New Year
-  const ethNewYear = new Date(year, 8, 11); // Sept 11
-  if (date < ethNewYear) {
-    ethNewYear.setFullYear(year - 1);
+  // Ethiopian year starts on Sept 11 (or Sept 12 in leap year)
+  // Use UTC to avoid timezone issues
+  const ethNewYear = new Date(Date.UTC(year, 8, 11)); // Sept 11
+  // Create UTC date from input to compare
+  const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  
+  if (utcDate < ethNewYear) {
+    ethNewYear.setUTCFullYear(year - 1);
   }
   
-  const diffTime = date.getTime() - ethNewYear.getTime();
+  const diffTime = utcDate.getTime() - ethNewYear.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   
   // Calculate Ethiopian month and day
@@ -162,15 +166,17 @@ export function ethiopianToGregorian(ethDate: EthiopianDate): Date {
   // Ethiopian New Year in Gregorian calendar
   // Ethiopian Year X starts in Gregorian Year X+7 (Sept 11/12)
   const gregYear = year + 7;
-  const newYear = new Date(gregYear, 8, 11); // Sept 11
+  const newYear = new Date(Date.UTC(gregYear, 8, 11)); // Sept 11 UTC
   
   // Calculate days to add
   const daysToAdd = (month - 1) * 30 + (day - 1);
   
   const result = new Date(newYear);
-  result.setDate(result.getDate() + daysToAdd);
+  result.setUTCDate(result.getUTCDate() + daysToAdd);
   
-  return result;
+  // Convert back to local time Date object (00:00 local)
+  // This ensures the date component matches the intended day
+  return new Date(result.getUTCFullYear(), result.getUTCMonth(), result.getUTCDate());
 }
 
 /**
