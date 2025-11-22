@@ -202,18 +202,18 @@ export default function Home() {
             </div>
           </div>
           
-          {/* Mobile: How It Works - Horizontal Scroll */}
+          {/* Mobile: How It Works - Vertical Grid */}
           <div className="md:hidden mb-6">
             <h3 className={`text-lg font-bold mb-3 text-gray-900 dark:text-white px-1 ${language === 'am' ? 'font-amharic' : ''}`}>{t.home.howItWorks}</h3>
-            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+            <div className="grid grid-cols-2 gap-3">
               {[
                 { step: '፩', title: t.home.step1, desc: t.home.step1Desc },
                 { step: '፪', title: t.home.step2, desc: t.home.step2Desc },
                 { step: '፫', title: t.home.step3, desc: t.home.step3Desc },
                 { step: '፬', title: t.home.step4, desc: t.home.step4Desc }
               ].map((item, idx) => (
-                <div key={idx} className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border border-gray-200 dark:border-gray-700 text-center flex-shrink-0 w-32 card-hover">
-                  <div className="w-12 h-12 bg-gradient-to-br from-ethiopian-green to-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-2 font-ethiopic text-2xl font-bold shadow-lg">
+                <div key={idx} className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-md border border-gray-200 dark:border-gray-700 text-center card-hover">
+                  <div className="w-10 h-10 bg-gradient-to-br from-ethiopian-green to-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-2 font-ethiopic text-xl font-bold shadow-lg">
                     {item.step}
                   </div>
                   <h4 className={`font-bold text-xs mb-1 text-gray-900 dark:text-white ${language === 'am' ? 'font-amharic' : ''}`}>{item.title}</h4>

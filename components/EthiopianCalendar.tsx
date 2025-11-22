@@ -83,33 +83,33 @@ export default function EthiopianCalendar({ selectedDates, onDateSelect, onDateR
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 border-4 border-ethiopian-gold">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-3 md:p-6 border-2 md:border-4 border-ethiopian-gold">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="mb-3 md:mb-6">
+        <div className="flex items-center justify-between mb-2 md:mb-4">
           <button
             onClick={goToPreviousMonth}
-            className="p-2 hover:bg-ethiopian-light-gold rounded-lg transition-colors"
+            className="p-1.5 md:p-2 hover:bg-ethiopian-light-gold dark:hover:bg-gray-700 rounded-lg transition-colors touch-manipulation"
           >
-            <svg className="w-6 h-6 text-ethiopian-dark-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 md:w-6 md:h-6 text-ethiopian-dark-green dark:text-ethiopian-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           
           <div className="text-center">
-            <h2 className="text-2xl font-ethiopic font-bold text-ethiopian-dark-green">
+            <h2 className="text-base md:text-2xl font-ethiopic font-bold text-ethiopian-dark-green dark:text-ethiopian-green">
               {ETHIOPIAN_MONTHS[currentDate.month - 1]}
             </h2>
-            <p className="text-lg font-ethiopic text-ethiopian-green">
+            <p className="text-sm md:text-lg font-ethiopic text-ethiopian-green">
               {toEthiopicNumeral(currentDate.year)}
             </p>
           </div>
           
           <button
             onClick={goToNextMonth}
-            className="p-2 hover:bg-ethiopian-light-gold rounded-lg transition-colors"
+            className="p-1.5 md:p-2 hover:bg-ethiopian-light-gold dark:hover:bg-gray-700 rounded-lg transition-colors touch-manipulation"
           >
-            <svg className="w-6 h-6 text-ethiopian-dark-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 md:w-6 md:h-6 text-ethiopian-dark-green dark:text-ethiopian-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -117,23 +117,23 @@ export default function EthiopianCalendar({ selectedDates, onDateSelect, onDateR
         
         <button
           onClick={goToToday}
-          className="w-full py-2 bg-ethiopian-green text-white rounded-lg hover:bg-ethiopian-dark-green transition-colors font-semibold"
+          className="w-full py-1.5 md:py-2 bg-ethiopian-green text-white rounded-lg hover:bg-ethiopian-dark-green transition-colors font-semibold text-sm md:text-base touch-manipulation"
         >
           Today
         </button>
       </div>
       
       {/* Weekday headers */}
-      <div className="grid grid-cols-7 gap-2 mb-2">
+      <div className="grid grid-cols-7 gap-1 md:gap-2 mb-1 md:mb-2">
         {['ሰ', 'ማ', 'ረ', 'ሐ', 'አ', 'ቅ', 'እ'].map((day, i) => (
-          <div key={i} className="text-center font-ethiopic font-bold text-ethiopian-dark-green py-2">
+          <div key={i} className="text-center font-ethiopic font-bold text-ethiopian-dark-green dark:text-ethiopian-green py-1 md:py-2 text-xs md:text-sm">
             {day}
           </div>
         ))}
       </div>
       
       {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1 md:gap-2">
         {Array.from({ length: offset }).map((_, i) => (
           <div key={`empty-${i}`} className="aspect-square" />
         ))}
@@ -149,13 +149,13 @@ export default function EthiopianCalendar({ selectedDates, onDateSelect, onDateR
               onClick={() => !past && handleDateClick(day)}
               disabled={past}
               className={`
-                aspect-square rounded-lg font-ethiopic text-lg transition-all
+                aspect-square rounded-md md:rounded-lg font-ethiopic text-xs md:text-lg transition-all touch-manipulation
                 ${selected 
-                  ? 'bg-ethiopian-green text-white ring-4 ring-ethiopian-yellow shadow-lg transform scale-105' 
-                  : 'bg-gray-50 hover:bg-ethiopian-light-gold text-ethiopian-dark-green'
+                  ? 'bg-ethiopian-green text-white ring-2 md:ring-4 ring-ethiopian-yellow shadow-md md:shadow-lg transform scale-105' 
+                  : 'bg-gray-50 dark:bg-gray-700 hover:bg-ethiopian-light-gold dark:hover:bg-gray-600 text-ethiopian-dark-green dark:text-gray-200'
                 }
-                ${todayDate && !selected ? 'ring-2 ring-ethiopian-red' : ''}
-                ${past ? 'opacity-30 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'}
+                ${todayDate && !selected ? 'ring-1 md:ring-2 ring-ethiopian-red' : ''}
+                ${past ? 'opacity-30 cursor-not-allowed' : 'active:scale-95 cursor-pointer'}
               `}
             >
               {toEthiopicNumeral(day)}
@@ -166,8 +166,8 @@ export default function EthiopianCalendar({ selectedDates, onDateSelect, onDateR
       
       {/* Selected dates counter */}
       {selectedDates.length > 0 && (
-        <div className="mt-4 p-3 bg-ethiopian-light-gold rounded-lg text-center">
-          <p className="text-ethiopian-dark-green font-semibold">
+        <div className="mt-3 md:mt-4 p-2 md:p-3 bg-ethiopian-light-gold dark:bg-gray-700 rounded-lg text-center">
+          <p className="text-ethiopian-dark-green dark:text-gray-200 font-semibold text-xs md:text-sm">
             {selectedDates.length} {selectedDates.length === 1 ? 'day' : 'days'} selected
           </p>
         </div>

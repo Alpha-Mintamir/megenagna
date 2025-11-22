@@ -21,12 +21,12 @@ export default function AvailabilityGrid() {
   
   if (selectedDates.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-12 text-center border-4 border-ethiopian-gold">
-        <div className="text-6xl mb-4">📅</div>
-        <h3 className="text-2xl font-bold text-ethiopian-dark-green mb-2">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-12 text-center border-2 md:border-4 border-ethiopian-gold">
+        <div className="text-4xl md:text-6xl mb-3 md:mb-4">📅</div>
+        <h3 className="text-lg md:text-2xl font-bold text-ethiopian-dark-green dark:text-ethiopian-green mb-2">
           Select Dates
         </h3>
-        <p className="text-gray-600">
+        <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
           Please select dates from the calendar to start marking your availability
         </p>
       </div>
@@ -35,12 +35,12 @@ export default function AvailabilityGrid() {
   
   if (!currentParticipant) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-12 text-center border-4 border-ethiopian-gold">
-        <div className="text-6xl mb-4">👤</div>
-        <h3 className="text-2xl font-bold text-ethiopian-dark-green mb-2">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-12 text-center border-2 md:border-4 border-ethiopian-gold">
+        <div className="text-4xl md:text-6xl mb-3 md:mb-4">👤</div>
+        <h3 className="text-lg md:text-2xl font-bold text-ethiopian-dark-green dark:text-ethiopian-green mb-2">
           Add Your Name
         </h3>
-        <p className="text-gray-600">
+        <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
           Please enter your name to mark your availability
         </p>
       </div>
@@ -119,37 +119,97 @@ export default function AvailabilityGrid() {
   };
   
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 border-4 border-ethiopian-gold">
-      <div className="mb-4">
-        <h3 className="text-xl font-bold text-ethiopian-dark-green mb-2">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-3 md:p-6 border-2 md:border-4 border-ethiopian-gold">
+      <div className="mb-3 md:mb-4">
+        <h3 className="text-base md:text-xl font-bold text-ethiopian-dark-green dark:text-ethiopian-green mb-1 md:mb-2">
           Mark Your Availability
         </h3>
-        <p className="text-gray-600 text-sm mb-4">
-          Click and drag to mark when you're available. Green intensity shows how many people are available.
+        <p className="text-gray-600 dark:text-gray-400 text-xs md:text-sm mb-3 md:mb-4">
+          Tap time slots to mark when you're available. Green intensity shows how many people are available.
         </p>
         
         {/* Legend */}
-        <div className="flex flex-wrap gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-ethiopian-green rounded"></div>
-            <span>Everyone available</span>
+        <div className="grid grid-cols-2 md:flex md:flex-wrap gap-2 md:gap-4 text-xs md:text-sm">
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="w-3 h-3 md:w-4 md:h-4 bg-ethiopian-green rounded flex-shrink-0"></div>
+            <span className="dark:text-gray-300">Everyone</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-green-400 rounded"></div>
-            <span>Most available</span>
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="w-3 h-3 md:w-4 md:h-4 bg-green-400 rounded flex-shrink-0"></div>
+            <span className="dark:text-gray-300">Most</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-ethiopian-yellow rounded"></div>
-            <span>Some available</span>
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="w-3 h-3 md:w-4 md:h-4 bg-ethiopian-yellow rounded flex-shrink-0"></div>
+            <span className="dark:text-gray-300">Some</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-orange-300 rounded"></div>
-            <span>Few available</span>
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="w-3 h-3 md:w-4 md:h-4 bg-orange-300 rounded flex-shrink-0"></div>
+            <span className="dark:text-gray-300">Few</span>
           </div>
         </div>
       </div>
       
-      <div className="overflow-x-auto">
+      {/* Mobile: Vertical layout - one date per section */}
+      <div className="md:hidden space-y-4">
+        {selectedDates.map((date, dateIdx) => {
+          const ethDate = gregorianToEthiopian(date);
+          const weekDay = getEthiopianWeekDay(date);
+          
+          return (
+            <div key={dateIdx} className="border-2 border-ethiopian-gold rounded-lg overflow-hidden">
+              {/* Date header */}
+              <div className="p-2 bg-ethiopian-light-gold dark:bg-gray-700 border-b-2 border-ethiopian-gold">
+                <div className="text-center">
+                  <div className="font-ethiopic font-bold text-ethiopian-dark-green dark:text-ethiopian-green text-sm">
+                    {weekDay}
+                  </div>
+                  <div className="font-ethiopic text-xs text-ethiopian-green dark:text-ethiopian-green mt-0.5">
+                    {formatEthiopianDate(ethDate, true)}
+                  </div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                    {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Time slots - vertical list */}
+              <div className="bg-white dark:bg-gray-800">
+                {hours.map(hour => {
+                  const count = getAvailabilityCount(date, hour);
+                  const isAvailable = isCurrentUserAvailable(date, hour);
+                  
+                  return (
+                    <div
+                      key={hour}
+                      onTouchStart={() => handleMouseDown(date, hour)}
+                      onMouseDown={() => handleMouseDown(date, hour)}
+                      onMouseEnter={() => handleMouseEnter(date, hour)}
+                      className={`
+                        flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-700 cursor-pointer transition-all touch-manipulation
+                        ${getCellColor(date, hour)}
+                        ${isAvailable ? 'ring-2 ring-inset ring-ethiopian-red' : ''}
+                        active:opacity-80
+                      `}
+                    >
+                      <span className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        {formatHour(hour)}
+                      </span>
+                      {count > 0 && (
+                        <span className="text-xs font-bold text-white bg-black bg-opacity-50 px-2 py-1 rounded">
+                          {count}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      
+      {/* Desktop: Horizontal layout */}
+      <div className="hidden md:block overflow-x-auto scrollbar-hide">
         <div 
           ref={gridRef}
           className="inline-block min-w-full select-none"
@@ -157,12 +217,12 @@ export default function AvailabilityGrid() {
         >
           <div className="flex">
             {/* Time column */}
-            <div className="flex flex-col sticky left-0 bg-white z-10">
+            <div className="flex flex-col sticky left-0 bg-white dark:bg-gray-800 z-10">
               <div className="h-24 border-b-2 border-ethiopian-gold"></div>
               {hours.map(hour => (
                 <div
                   key={hour}
-                  className="h-12 flex items-center justify-end pr-3 text-sm font-semibold text-ethiopian-dark-green border-b border-gray-200"
+                  className="h-12 flex items-center justify-end pr-3 text-sm font-semibold text-ethiopian-dark-green dark:text-ethiopian-green border-b border-gray-200 dark:border-gray-700"
                 >
                   {formatHour(hour)}
                 </div>
@@ -177,15 +237,15 @@ export default function AvailabilityGrid() {
               return (
                 <div key={dateIdx} className="flex flex-col min-w-[120px]">
                   {/* Date header */}
-                  <div className="h-24 p-2 border-b-2 border-ethiopian-gold bg-ethiopian-light-gold">
+                  <div className="h-24 p-2 border-b-2 border-ethiopian-gold bg-ethiopian-light-gold dark:bg-gray-700">
                     <div className="text-center">
-                      <div className="font-ethiopic font-bold text-ethiopian-dark-green text-sm">
+                      <div className="font-ethiopic font-bold text-ethiopian-dark-green dark:text-ethiopian-green text-sm">
                         {weekDay}
                       </div>
-                      <div className="font-ethiopic text-xs text-ethiopian-green mt-1">
+                      <div className="font-ethiopic text-xs text-ethiopian-green dark:text-ethiopian-green mt-1">
                         {formatEthiopianDate(ethDate, true)}
                       </div>
-                      <div className="text-xs text-gray-600 mt-1">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                         {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </div>
                     </div>
@@ -202,7 +262,7 @@ export default function AvailabilityGrid() {
                         onMouseDown={() => handleMouseDown(date, hour)}
                         onMouseEnter={() => handleMouseEnter(date, hour)}
                         className={`
-                          h-12 border-b border-r border-gray-200 cursor-pointer transition-all
+                          h-12 border-b border-r border-gray-200 dark:border-gray-700 cursor-pointer transition-all
                           ${getCellColor(date, hour)}
                           ${isAvailable ? 'ring-2 ring-inset ring-ethiopian-red' : ''}
                           hover:opacity-80

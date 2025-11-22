@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import MobileBlock from '@/components/MobileBlock'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { LanguageProvider } from '@/components/LanguageProvider'
 
@@ -17,10 +16,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="mobile-support" content="enabled" />
+      </head>
       <body className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
         <ThemeProvider>
           <LanguageProvider>
-            <MobileBlock />
             {children}
           </LanguageProvider>
         </ThemeProvider>
