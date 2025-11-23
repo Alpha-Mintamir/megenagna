@@ -1,4 +1,4 @@
-# Megenagna - መገናኛ
+# Megenagna -  መገናኛ
 
 Ethiopian Calendar Meeting Scheduler
 
