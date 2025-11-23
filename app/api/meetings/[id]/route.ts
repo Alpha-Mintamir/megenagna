@@ -62,8 +62,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  let body: any;
   try {
-    const body = await request.json();
+    body = await request.json();
     const { userId, userName, slots } = body;
     
     if (!userId || !userName || !slots) {
@@ -97,7 +98,7 @@ export async function PATCH(
     // This reduces round trips from 2-3 queries to just 1
     if (existingEntry) {
       // Update existing entry
-      const updatedMeeting = await db.collection('meetings').findOneAndUpdate(
+      const result = await db.collection('meetings').findOneAndUpdate(
         { id: params.id, 'availability.userId': userId },
         { 
           $set: { 
@@ -111,14 +112,31 @@ export async function PATCH(
         }
       );
       
-      if (updatedMeeting) {
-        const sanitized = updatedMeeting as unknown as MeetingRecord;
+      if (result.value) {
+        const sanitized = result.value as unknown as MeetingRecord;
         sanitized.availability = sanitized.availability ?? [];
         return NextResponse.json({ meeting: sanitized });
       }
+      
+      // If result.value is null, fetch the document to verify the update succeeded
+      // This handles edge cases where findOneAndUpdate returns null but update succeeded
+      const updatedMeeting = await db.collection('meetings').findOne(
+        { id: params.id },
+        { projection: { _id: 0 } }
+      );
+      
+      if (updatedMeeting) {
+        const sanitized = updatedMeeting as unknown as MeetingRecord;
+        sanitized.availability = sanitized.availability ?? [];
+        // Verify the update actually happened
+        const updatedEntry = sanitized.availability.find((a: any) => a.userId === userId);
+        if (updatedEntry && JSON.stringify(updatedEntry.slots.sort()) === JSON.stringify(uniqueSlots)) {
+          return NextResponse.json({ meeting: sanitized });
+        }
+      }
     } else {
       // Add new entry
-      const updatedMeeting = await db.collection('meetings').findOneAndUpdate(
+      const result = await db.collection('meetings').findOneAndUpdate(
         { id: params.id },
         { 
           $push: { 
@@ -131,10 +149,26 @@ export async function PATCH(
         }
       );
       
+      if (result.value) {
+        const sanitized = result.value as unknown as MeetingRecord;
+        sanitized.availability = sanitized.availability ?? [];
+        return NextResponse.json({ meeting: sanitized });
+      }
+      
+      // If result.value is null, fetch the document to verify the update succeeded
+      const updatedMeeting = await db.collection('meetings').findOne(
+        { id: params.id },
+        { projection: { _id: 0 } }
+      );
+      
       if (updatedMeeting) {
         const sanitized = updatedMeeting as unknown as MeetingRecord;
         sanitized.availability = sanitized.availability ?? [];
-        return NextResponse.json({ meeting: sanitized });
+        // Verify the update actually happened
+        const newEntry = sanitized.availability.find((a: any) => a.userId === userId);
+        if (newEntry && JSON.stringify(newEntry.slots.sort()) === JSON.stringify(uniqueSlots)) {
+          return NextResponse.json({ meeting: sanitized });
+        }
       }
     }
 
@@ -143,14 +177,18 @@ export async function PATCH(
     console.error('Database error during update:', error);
     
     // Only use memory fallback in development
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' && body) {
       try {
-        // Request body might have been consumed, but Next.js might cache it? 
-        // Actually we already parsed it at the top of the function as `body`
-        // We can't easily pass it here without restructuring the function
-        // But logging the error is the most important part for production
-      } catch {
+        const { userId, userName, slots } = body;
+        if (userId && userName && slots) {
+          const fallback = await upsertAvailabilityInMemory(params.id, userId, userName, slots);
+          if (fallback) {
+            return NextResponse.json({ meeting: fallback, source: 'memory' });
+          }
+        }
+      } catch (fallbackError) {
         // Ignore fallback errors
+        console.error('Fallback error:', fallbackError);
       }
     }
 

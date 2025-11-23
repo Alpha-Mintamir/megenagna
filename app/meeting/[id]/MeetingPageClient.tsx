@@ -232,16 +232,25 @@ export default function MeetingPageClient({ meetingId }: Props) {
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to save availability');
+        // Check if we got a valid error message from the API
+        const errorMessage = data.error || 'Failed to save availability';
+        throw new Error(errorMessage);
       }
 
-      const data = await response.json();
+      // Verify we got a meeting object back
+      if (!data || !data.meeting) {
+        throw new Error('Invalid response from server');
+      }
+
       setMeeting(data.meeting);
       setHasSubmitted(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving availability:', error);
-      alert('Failed to save availability. Please try again.');
+      const errorMessage = error.message || 'Failed to save availability. Please try again.';
+      alert(errorMessage);
     }
   };
 
@@ -522,10 +531,14 @@ export default function MeetingPageClient({ meetingId }: Props) {
               {dates.map((date, idx) => {
                 const ethDate = gregorianToEthiopian(date);
                 const dayOfWeek = date.getDay();
+                // Adjust: JS getDay() returns 0=Sunday, 1=Monday, etc.
+                // ETHIOPIAN_DAYS array is [Monday, Tuesday, ..., Sunday]
+                // So we need: Sunday->6, Monday->0, Tuesday->1, etc.
+                const adjustedIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
                 return (
                   <div key={idx} className="text-center p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
                     <div className="font-ethiopic text-xs sm:text-sm text-ethiopian-green font-semibold mb-1">
-                      {ETHIOPIAN_DAYS[dayOfWeek]}
+                      {ETHIOPIAN_DAYS[adjustedIndex]}
                     </div>
                     <div className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">
                       {date.getMonth() + 1}/{date.getDate()}
